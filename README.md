@@ -11,16 +11,16 @@ Dates:
 
 ----------
 Study of Collaborative Algorithm:
-Algorithm in context of Network Music: how could Algorithm be collaborative?
+> Algorithm in context of Network Music: how could Algorithm be collaborative?
   
 ----------
 State:
-implemented simple distributed markov chain
-'[0,1,2]'
+> implemented simple distributed markov chain
+> [0,1,2]
 
 
 ------------
 to-do:
 
-responding state chart for every one
-sound
+> responding state chart for every one
+> sound
