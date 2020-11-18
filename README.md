@@ -21,4 +21,6 @@ implemented simple distributed markov chain
 
 ------------
 to-do:
+
+responding state chart for every one
 sound
