@@ -9,13 +9,12 @@
 //to-do: maybe play a bit with sound
 
 (
-n = NetAddr("127.0.0.1", 57120);
-~id = 0;
+n = NetAddr("127.0.0.1", 57140);
+~id = 0;//gai id
 ~userList = [0,1,2];
-~histo = [];
-)
 
-(
+~histo = [];
+
 ~histogram = {~histo[..0].collect({
 	|msg|
 	var from = msg[0];
@@ -24,12 +23,13 @@ n = NetAddr("127.0.0.1", 57120);
 	array[from] = to;
 	array.postln;
 })};
+
+~respond = {|n|  n==~id};
 )
 
-~histo = [];
-
+(
 ////////////////////////////////////universal_implementation
-(////////////////////////////////////receive
+////////////////////////////////////receive
 (OSCdef(\send, {|msg|
 
 	var from = msg[2];
@@ -50,7 +50,7 @@ n = NetAddr("127.0.0.1", 57120);
 }, \markov);
 ))
 
-//~respond = {|n|  n==~id};
+
 
 (///////////////////////////////////send
 var to = ~userList.reject(_==~id).choose;
