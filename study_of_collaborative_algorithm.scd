@@ -4,15 +4,64 @@
 
 /////////////////20201117//////////////////
 
-//date1118: simple implementation of distributed markov chain
+//date1123: responding state chart for every one
 
-//to-do: responding state chart for every one
+//to-do: maybe play a bit with sound
 
 (
 n = NetAddr("127.0.0.1", 57120);
 ~id = 0;
 ~userList = [0,1,2];
+~histo = [];
 )
+
+(
+~histogram = {~histo[..0].collect({
+	|msg|
+	var from = msg[0];
+	var to = msg[1];
+	var array = ''!3;
+	array[from] = to;
+	array.postln;
+})};
+)
+
+~histo = [];
+
+////////////////////////////////////universal_implementation
+(////////////////////////////////////receive
+(OSCdef(\send, {|msg|
+
+	var from = msg[2];
+	var to = msg[1];
+	~histo = ~histo.insert(0,[from, to]);
+	~histogram.value;
+	if(~respond.(msg[1]),
+		{
+			{
+				var next = ~userList.reject(_==~id).choose;
+				next.postln;
+				0.5.wait;
+				(msg[1]+" sending next message to " ++ next.asString).postln;
+				n.sendMsg('/markov', next, ~id, "ok");
+	}.fork;},{
+//else?
+	});
+}, \markov);
+))
+
+//~respond = {|n|  n==~id};
+
+(///////////////////////////////////send
+var to = ~userList.reject(_==~id).choose;
+to.postln;
+n.sendMsg('/markov', 0, ~id, "ok");
+)
+
+
+
+
+
 
 
 ////////////////////////////////////////////////////////logic
@@ -23,10 +72,11 @@ n = NetAddr("127.0.0.1", 57120);
 	if(true,
 		{
 			{
-				var to = ~userList.reject(_==msg[1]).choose;
+				var from = msg[1];
+				var to = ~userList.reject(_==from).choose;
 				var chart = [" "," "," "];
 				0.5.wait;
-				chart[msg[1]] = to;
+				chart[from] = to;
 				chart.postln;
 				n.sendMsg('/markov', to, "ok");
 		}.fork;},{
@@ -58,29 +108,6 @@ var state= Array.fill(3,"  ");
 
 
 
-////////////////////////////////////universal_implementation
-(////////////////////////////////////receive
-(OSCdef(\send, {|msg|
-	if(msg[1] == ~id,
-		{
-			{
-				var to = ~userList.reject(_==~id).choose;
-				0.5.wait;
-				(msg[1]+" sending next message to " ++ to.asString).postln;
-				n.sendMsg('/markov', to, "ok");
-	}.fork;},{
-//else?
-	});
-}, \markov);
-))
-
-(///////////////////////////////////send
-var to = ~userList.reject(_==~id).choose;
-to.postln;
-n.sendMsg('/markov', 0, "ok");
-)
-
-
 
 ///////////////////////////windo_sketch
 //now it's fake
@@ -96,7 +123,6 @@ b.font = Font("sansSerif",20);
 
 w.front;
 )
-
 
 ///////////////////////////////////////////notes
 ////////////////////possible_message_paths
