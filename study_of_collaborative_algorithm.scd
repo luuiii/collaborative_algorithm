@@ -10,7 +10,7 @@
 
 (
 n = NetAddr("127.0.0.1", 57140);
-~id = 0;//gai id
+~id = 0;//li_gai_id
 ~userList = [0,1,2];
 
 ~histo = [];
@@ -25,9 +25,14 @@ n = NetAddr("127.0.0.1", 57140);
 })};
 
 ~respond = {|n|  n==~id};
+~play_message = {|from,to|
+	var freqs = [442, 800, 1200];
+	var pans = [-1,0,1];
+	Synth(\gai_id, [\freq, freqs[to],\pan, pans[from]])
+}
 )
 
-(
+
 ////////////////////////////////////universal_implementation
 ////////////////////////////////////receive
 (OSCdef(\send, {|msg|
@@ -36,11 +41,11 @@ n = NetAddr("127.0.0.1", 57140);
 	var to = msg[1];
 	~histo = ~histo.insert(0,[from, to]);
 	~histogram.value;
+	~play_message.(from, to);
 	if(~respond.(msg[1]),
 		{
 			{
 				var next = ~userList.reject(_==~id).choose;
-				next.postln;
 				0.5.wait;
 				(msg[1]+" sending next message to " ++ next.asString).postln;
 				n.sendMsg('/markov', next, ~id, "ok");
@@ -48,7 +53,17 @@ n = NetAddr("127.0.0.1", 57140);
 //else?
 	});
 }, \markov);
-))
+
+SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0|
+	var sig = SinOsc.ar(freq);
+	var env = EnvGen.kr(Env([0,1,0],[0.01,0.7]), doneAction:2);
+	sig = Pan2.ar(sig, pan);
+	sig = sig*env*amp;
+	Out.ar(0,sig)
+}).add
+
+)
+
 
 
 
@@ -57,57 +72,6 @@ var to = ~userList.reject(_==~id).choose;
 to.postln;
 n.sendMsg('/markov', 0, ~id, "ok");
 )
-
-
-
-
-
-
-
-////////////////////////////////////////////////////////logic
-
-
-(//////////////////////////////receive_all
-(OSCdef(\send, {|msg|
-	if(true,
-		{
-			{
-				var from = msg[1];
-				var to = ~userList.reject(_==from).choose;
-				var chart = [" "," "," "];
-				0.5.wait;
-				chart[from] = to;
-				chart.postln;
-				n.sendMsg('/markov', to, "ok");
-		}.fork;},{
-			//else?
-	});
-}, \markov);
-))
-
-(///////////////////////////////////send
-var to = ~userList.reject(_==~id).choose;
-to.postln;
-n.sendMsg('/markov', to, "ok");
-)
-
-(///////////////////markov_chain_like
-	var u1 = [1,2];
-	var u2 = [0,2];
-	var u3 = [0,1];
-var state= Array.fill(3,"  ");
-	var current = [u1,u2,u3].choose.choose;
-30.do{
-	var next_choice;
-	state = Array.fill(3,"  ");
-	next_choice = [u1,u2,u3][current].choose;
-	state[current] = next_choice;
-	state.postln;
-	current = next_choice;
-})
-
-
-
 
 ///////////////////////////windo_sketch
 //now it's fake
