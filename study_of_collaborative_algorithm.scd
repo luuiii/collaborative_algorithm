@@ -30,18 +30,30 @@ n = NetAddr("127.0.0.1", 57140);
 
 ~respond = {|n| n==~id};
 
+SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
+	var sig = SinOsc.ar(freq);
+	var env = EnvGen.kr(
+		Env([0, 1, 0], [0.005, 0.5]),
+		doneAction: 2,
+		timeScale: dur
+	);
+	sig = Pan2.ar(sig, pan);
+	sig = sig*env*amp;
+	Out.ar(0,sig)
+}).add;
+
 ~play_message = {|from, to, waitTime|
-	var freqs = [442, 800, 1200];
+	var freqs = [400, 800, 1200];
 	var pans = [-1, 0, 1];
+
 	Synth(\gai_id, [
-		\freq, freqs[to] * waitTime.value().linlin(0.1, 20, 0.3, 10),
+		\freq, freqs[to] * waitTime.value().linexp(0.1, 20, 0.3, 5),
 		\pan, pans[from],
 		\dur: waitTime.value() * 0.5,
 	]
 	)
 }
 )
-
 
 
 ////////////////////////////////////universal_implementation
@@ -55,12 +67,17 @@ n = NetAddr("127.0.0.1", 57140);
 ~configs = [(
 	// Slower queue with longer wait time
 	name: \slow,
-	waitTime: {rrand(5, 20)},
-	nextTarget: {~userList.reject(_==~id).choose}
+	waitTime: {rrand(5, 10)},
+	nextTarget: {~userList.reject(_==~id).choose},
+	// Weight choose
+	// nextTarget: {~userList.reject(_==~id).wchoose([0.1, 0.9])}
+	// Fixed target, alwasy send to this
+	// nextTarget: {0}
 ),  (
 	// Faster queue
 	name: \fast,
-	waitTime: {rrand(0.2, 1)},
+	waitTime: {rrand(0.1, 5)},
+	// waitTime: {[rrand(0.04,  0.05), rrand(0.4, 4)].wchoose([0.8, 0.2])},
 	nextTarget: {~userList.reject(_==~id).choose};
 )];
 
@@ -98,22 +115,6 @@ n = NetAddr("127.0.0.1", 57140);
 )
 
 
-(
-SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
-	var sig = SinOsc.ar(freq);
-	var env = EnvGen.kr(
-		Env([0, 1, 0], [0.01, 0.7]),
-		doneAction: 2,
-		timeScale: dur
-	);
-	sig = Pan2.ar(sig, pan);
-	sig = sig*env*amp;
-	Out.ar(0,sig)
-}).add;
-)
-
-
-
 
 
 // **** Trigger the piece
@@ -128,7 +129,7 @@ n.sendMsg('/slow', 0, ~id, "ok");
 // Send message to fast
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/slow', 0, ~id, "ok");
+n.sendMsg('/fast', 0, ~id, "ok");
 )
 
 
