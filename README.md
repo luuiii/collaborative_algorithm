@@ -21,3 +21,8 @@ implemented simple distributed markov chain <br>
 responding state chart for every one <br>
 sound
 
+sound idea/logic: (notes from our last meeting) <br>
+1. the performance is a whole process, this process is about the 3 collaborators building up 1 timbre;<br>
+2. pointillistic music, so to speak. 3 collaborators share 1 algorithm, but make different sounds, contingency and tacet are very important, must take into consideration. <br>
+and so on...
+
