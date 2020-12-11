@@ -5,7 +5,7 @@
 Dates:
 
 - Deadline of application for IMWI-concert:2020.11.30 
-- IMW-concert: 2021.01.29
+- IMWI-concert: 2021.01.29
 - Live coding concert: unknown
 
 #### Study of Collaborative Algorithm: <br>
