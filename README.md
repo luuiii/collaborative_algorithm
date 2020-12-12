@@ -1,8 +1,8 @@
+<img src="https://github.com/luuiii/collaborative_algorithm/blob/master/empty_array.png" height="200" align="right"><br>
 ## collaborative_algorithm
 ### Jia & Shuoxin & Song - created @ 2020.11.16
-![](https://github.com/luuiii/collaborative_algorithm/blob/master/empty_array.png)
 
-Dates:
+dates:
 - ~~Deadline of application for IMWI-concert:2020.11.30~~
 - IMWI-concert: 2021.01.29
 - (?) Live coding concert: unknown
@@ -10,8 +10,7 @@ Dates:
 #### Study of Collaborative Algorithm: <br>
 Algorithm in context of Network Music: how could Algorithm be collaborative and distributed?
 
-
-#### State: <br>
+#### state: <br>
 - implemented simple distributed markov chain
 - code structure of OSCdefs for multiple individual chains
 - simple sound
@@ -26,8 +25,6 @@ Algorithm in context of Network Music: how could Algorithm be collaborative and 
 - a new chain with a threshold reaching retrigger machanism that a same process would grow over and over but always with various time path
 - sound with varing spectrum (DynKlang?)
 - granular synthesis
-
-
 
 sound idea/logic: (notes from 12.7.) <br>
 1. the performance is a whole process, this process is about the 3 collaborators building up 1 timbre;<br>
