@@ -1,4 +1,4 @@
-<img src="https://github.com/luuiii/collaborative_algorithm/blob/master/empty_array.png" height="189"> <br>
+<img src="https://github.com/luuiii/collaborative_algorithm/blob/master/empty_array_nil.png" height="189" width="472"> <br>
 ## collaborative_algorithm
 ### Jia & Shuoxin & Song - created @ 2020.11.16
 
