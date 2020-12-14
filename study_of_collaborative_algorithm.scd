@@ -117,8 +117,6 @@ OSCdef(\chat,{|msg|
 	(~userNameList[msg[1]]++": "++(msg[2]).asString).postln},\chat);
 )
 
-n.sendMsg('/chat',~id, "hi!")
-
 
 // **** Trigger the piece
 (
@@ -134,3 +132,6 @@ var to = ~userList.reject(_==~id).choose;
 to.postln;
 n.sendMsg('/fast', 0, ~id, "ok");
 )
+
+//////////////////////////////////////////chat
+n.sendMsg('/chat',~id, "hao de")

@@ -46,10 +46,9 @@ var state= Array.fill(3,"  ");
 (
 var w;
 w = Window("numbers", Rect(0, 500, 128*2, 36*2));
-
 w.view.background = Color.black;
 CompositeView.new(w,Rect(5,5,256,60));
-b = StaticText.new(w,Rect(5,5,256,40)).string_("0            1            2");
+b = StaticText.new(w,Rect(5,5,256,40)).string_(~histogram.value);
 b.stringColor = Color.white;
 b.font = Font("sansSerif",20);
 
@@ -58,7 +57,7 @@ w.front;
 
 ///////////////////////////////////////////notes
 ////////////////////possible_message_paths
-
+[1   2   0]
 // 0 >> 0
 // 0 >> 1
 // 0 >> 2
