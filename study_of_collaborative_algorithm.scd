@@ -18,16 +18,15 @@ n = NetAddr("127.0.0.1", 57140);
 ~userNameList = ["jia","song","shuoxin"];
 ~userList = [0, 1, 2];
 
-~histo = [];
+~histo = ();
 
-~histogram = {~histo[..0].collect({
-	|msg|
+~histogram = {|name| (~histo[name]?[])[..0].collect({|msg|
 	var from = msg[0];
 	var to = msg[1];
 	var array = ''!3;
 	array[from] = to;
-	array.postln;
-})};
+//	array.postln;
+})[0]};
 
 ~respond = {|n| n==~id};
 
@@ -68,7 +67,7 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 ~configs = [(
 	// Slower queue with longer wait time
 	name: \slow,
-	waitTime: {rrand(5, 10)},
+	waitTime: {rrand(2, 5)},
 	nextTarget: {~userList.reject(_==~id).choose},
 	// Weight choose
 	// nextTarget: {~userList.reject(_==~id).wchoose([0.1, 0.9])}
@@ -77,7 +76,7 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 ),  (
 	// Faster queue
 	name: \fast,
-	waitTime: {rrand(0.1, 5)},
+	waitTime: {rrand(0.1, 0.5)},
 	// waitTime: {[rrand(0.04,  0.05), rrand(0.4, 4)].wchoose([0.8, 0.2])},
 	nextTarget: {~userList.reject(_==~id).choose};
 )];
@@ -87,9 +86,10 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	OSCdef(config.name.asSymbol, {|msg|
 		var from = msg[2];
 		var to = msg[1];
-		~histo = ~histo.insert(0, [from, to]);
-		~histogram.value;
-		~play_message.(from, to, config.waitTime);
+		var lastWaitTime = msg[3];
+		~histo[config.name] = (~histo[config.name]?[]).insert(0, [from, to]);
+		(config.name.asString++":"++~histogram.value(config.name)).postln;
+		~play_message.(from, to, lastWaitTime);
 
 		if(~respond.(msg[1]),
 			{
@@ -106,7 +106,7 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 
 					(msg[1] +" sending next message to " ++ nextTarget.asString).postln;
 
-					n.sendMsg(config.name, nextTarget, ~id, "ok");
+					n.sendMsg(config.name, nextTarget, ~id, waitTime);
 			}.fork;},{
 				//else?
 		});
@@ -134,4 +134,4 @@ n.sendMsg('/fast', 0, ~id, "ok");
 )
 
 //////////////////////////////////////////chat
-n.sendMsg('/chat',~id, "hao de")
+n.sendMsg('/chat',~id, "?")
