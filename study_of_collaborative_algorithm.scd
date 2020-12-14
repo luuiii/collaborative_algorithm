@@ -15,6 +15,7 @@ n = NetAddr("127.0.0.1", 57140);
 // Song - 1
 // Shuoxin - 2
 ~id = 0;
+~userNameList = ["jia","song","shuoxin"];
 ~userList = [0, 1, 2];
 
 ~histo = [];
@@ -112,9 +113,11 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	}, config.name.asSymbol).postln;
 
 });
+OSCdef(\chat,{|msg|
+	(~userNameList[msg[1]]++": "++(msg[2]).asString).postln},\chat);
 )
 
-
+n.sendMsg('/chat',~id, "hi!")
 
 
 // **** Trigger the piece
