@@ -21,7 +21,7 @@ dates:
 
 #### to-do:
 - build connection between chains
-- rethink about waitTime map
+- rethink about waitTime map frequency. this blurred the identity too much. do we want that?
 - granular synthesis
 - a new chain with a threshold reaching retrigger machanism that let a same processs grow over and over but always with various time path - sound with varing spectrum (DynKlang)
 
