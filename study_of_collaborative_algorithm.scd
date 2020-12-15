@@ -47,7 +47,7 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	var pans = [-1, 0, 1];
 
 	Synth(\gai_id, [
-		\freq, freqs[to] * waitTime.value().linexp(0.1, 20, 0.3, 5),
+		\freq, freqs[to] * waitTime.value().linexp(0, 20, 0.3, 5),
 		\pan, pans[from],
 		\dur: waitTime.value() * 0.5,
 	]
@@ -67,7 +67,7 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 ~configs = [(
 	// Slower queue with longer wait time
 	name: \slow,
-	waitTime: {rrand(2, 5)},
+	waitTime: {rrand(4, 5)},
 	nextTarget: {~userList.reject(_==~id).choose},
 	// Weight choose
 	// nextTarget: {~userList.reject(_==~id).wchoose([0.1, 0.9])}
@@ -76,7 +76,7 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 ),  (
 	// Faster queue
 	name: \fast,
-	waitTime: {rrand(0.1, 0.5)},
+	waitTime: {rrand(0.3, 1.5)},
 	// waitTime: {[rrand(0.04,  0.05), rrand(0.4, 4)].wchoose([0.8, 0.2])},
 	nextTarget: {~userList.reject(_==~id).choose};
 )];
@@ -123,15 +123,15 @@ OSCdef(\chat,{|msg|
 // Send message to slow
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/slow', 0, ~id, "ok");
+n.sendMsg('/slow', 0, ~id, 0);
 )
 
 (
 // Send message to fast
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/fast', 0, ~id, "ok");
+n.sendMsg('/fast', 0, ~id, 0);
 )
 
 //////////////////////////////////////////chat
-n.sendMsg('/chat',~id, "?")
+n.sendMsg('/chat',~id, "good night :)")
