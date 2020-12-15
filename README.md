@@ -8,26 +8,31 @@ dates:
 - (?) Live coding concert: unknown
 
 #### Study of Collaborative Algorithm: <br>
-Algorithm in context of Network Music: how could Algorithm be collaborative and distributed?
+- Algorithm in context of Network Music: how could Algorithm be collaborative and distributed?
+- If we understand algorithm as function, (how) could they be composed together?
+- What ist one's identity in collaborative algorithm?
 
 #### state: <br>
 - implemented simple distributed markov chain
 - code structure of OSCdefs for multiple individual chains
 - simple sound
+- responding state chart for every one
+- state chart presentation prototype
 
 #### to-do:
-- ~~responding state chart for every one~~ 
-- build prototype of the "presentation board"
 - build connection between chains
-- waitTime globle map (important)
+- rethink about waitTime map
+- granular synthesis
+- a new chain with a threshold reaching retrigger machanism that let a same processs grow over and over but always with various time path - sound with varing spectrum (DynKlang)
 
 #### idea-box:
-- a new chain with a threshold reaching retrigger machanism that a same process would grow over and over but always with various time path
-- sound with varing spectrum (DynKlang?)
-- granular synthesis
+- chain modulate chain?
+- would be cool to be able to kill a chain and start a new one. (what does it mean in communication?) This may get us out of the force of (automatically) making dissicion. 
 
+
+
+#### notes:
 sound idea/logic: (notes from 12.7.) <br>
 1. the performance is a whole process, this process is about the 3 collaborators building up 1 timbre(Klanggebilde/Teiltongebilde);<br>
 2. pointillistic music, so to speak. 3 collaborators share 1 algorithm, but make different sounds, contingency and tacet are very important, must take into consideration. <br>
 and so on...
-
