@@ -36,3 +36,6 @@ sound idea/logic: (notes from 12.7.) <br>
 1. the performance is a whole process, this process is about the 3 collaborators building up 1 timbre(Klanggebilde/Teiltongebilde);<br>
 2. pointillistic music, so to speak. 3 collaborators share 1 algorithm, but make different sounds, contingency and tacet are very important, must take into consideration. <br>
 and so on...
+
+&nbsp; how stockhausen explained group/point &nbsp; <i>[Lecture 1 [PARTE 1/4] Stockhausen Karlheinz - English Lectures (1972)](https://www.youtube.com/watch?v=lYmMXB0e17E)<i> <br>
+
