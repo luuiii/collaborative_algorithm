@@ -8,6 +8,7 @@
 
 //to-do: maybe play a bit with sound
 
+
 (
 n = NetAddr("127.0.0.1", 57140);
 // The performer's ID
@@ -30,6 +31,46 @@ n = NetAddr("127.0.0.1", 57140);
 
 ~respond = {|n| n==~id};
 
+~partialList = [
+	30, 45.23333, 71, 120, 162, 193.1, 311.22, 425.667, 511.11, 939, 1122.1111
+];
+
+~partialThreshold = 11;
+~partialCount = 0;
+
+~sineGroup = Group.new(addAction: \addToTail);
+
+~addPartial = {
+	var freq = ~partialList[~partialCount];
+	("Adding one partial number:" ++ ~partialCount ++ " with freq: " ++ freq).postln;
+
+	Synth(\sine,
+		[\freq, freq, \amp, 0.1],
+		~sineGroup,
+		\addToTail
+	);
+	~partialCount = ~partialCount + 1;
+};
+
+~checkPartial = {
+	if ( ~partialCount >= ~partialThreshold, {
+		~sineGroup.set(\gate, 0);
+		~partialCount = 0;
+	});
+};
+
+SynthDef(\sine, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1|
+	var sig = SinOsc.ar(freq + LFNoise2.kr(1, 3));
+	var env = EnvGen.kr(
+		Env([0, 1, 0], [attack, Rand(5, 10)], releaseNode: 1),
+		doneAction: 2,
+		gate: gate,
+	);
+	sig = Pan2.ar(sig, pan);
+	sig = sig*env*amp*0.1;
+	Out.ar(0,sig)
+}).add;
+
 SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	var sig = SinOsc.ar(freq);
 	var env = EnvGen.kr(
@@ -42,16 +83,20 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	Out.ar(0,sig)
 }).add;
 
-~play_message = {|from, to, waitTime|
-	var freqs = [400, 800, 1200];
-	var pans = [-1, 0, 1];
+~play_message = {|queueName, from, to, waitTime|
+	if (queueName == \buildUp, {
+		~checkPartial.value();
+		~addPartial.value();
+	}, {
+		var freqs = [400, 800, 1200];
+		var pans = [-1, 0, 1];
 
-	Synth(\gai_id, [
-		\freq, freqs[to] * waitTime.value().linexp(0, 20, 0.3, 5),
-		\pan, pans[from],
-		\dur: waitTime.value() * 0.5,
-	]
-	)
+		Synth(\gai_id, [
+			\freq, freqs[to] * waitTime.value().linexp(0, 20, 0.3, 5),
+			\pan, pans[from],
+			\dur: waitTime.value() * 0.5,
+		])
+	});
 }
 )
 
@@ -79,7 +124,13 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	waitTime: {rrand(0.3, 1.5)},
 	// waitTime: {[rrand(0.04,  0.05), rrand(0.4, 4)].wchoose([0.8, 0.2])},
 	nextTarget: {~userList.reject(_==~id).choose};
-)];
+), (
+	// Build up queue
+	name: \buildUp,
+	waitTime: {rrand(5, 10)},
+	nextTarget: {~userList.reject(_==~id).choose};
+)
+];
 
 
 ~configs.collect({|config, index|
@@ -89,7 +140,7 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 		var lastWaitTime = msg[3];
 		~histo[config.name] = (~histo[config.name]?[]).insert(0, [from, to]);
 		(config.name.asString++":"++~histogram.value(config.name)).postln;
-		~play_message.(from, to, lastWaitTime);
+		~play_message.(config.name.asSymbol, from, to, lastWaitTime);
 
 		if(~respond.(msg[1]),
 			{
@@ -113,6 +164,7 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	}, config.name.asSymbol).postln;
 
 });
+
 OSCdef(\chat,{|msg|
 	(~userNameList[msg[1]]++": "++(msg[2]).asString).postln},\chat);
 )
@@ -131,6 +183,13 @@ n.sendMsg('/slow', 0, ~id, 0);
 var to = ~userList.reject(_==~id).choose;
 to.postln;
 n.sendMsg('/fast', 0, ~id, 0);
+)
+
+(
+// Start the buildUp queue
+var to = ~userList.reject(_==~id).choose;
+to.postln;
+n.sendMsg('/buildUp', 0, ~id, 0);
 )
 
 //////////////////////////////////////////chat
