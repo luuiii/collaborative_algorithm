@@ -31,6 +31,8 @@ n = NetAddr("127.0.0.1", 57140);
 
 ~respond = {|n| n==~id};
 
+~partialVolumes = (0.01.dup(5)++[ 0.0048505041599274, 0.0024618295431137, 0.0044890878200531, 0.0059495476484299, 0.0040295634269714, 0.0015437886714935]);
+
 ~partialList = [
 	30, 45.23333, 71, 120, 162, 193.1, 311.22, 425.667, 511.11, 939, 1122.1111
 ];
@@ -42,10 +44,11 @@ n = NetAddr("127.0.0.1", 57140);
 
 ~addPartial = {
 	var freq = ~partialList[~partialCount];
+	var amp = ~partialVolumes[~partialCount];
 	("Adding one partial number:" ++ ~partialCount ++ " with freq: " ++ freq).postln;
 
 	Synth(\sine,
-		[\freq, freq, \amp, 0.1],
+		[\freq, freq, \amp, amp],
 		~sineGroup,
 		\addToTail
 	);
@@ -67,7 +70,7 @@ SynthDef(\sine, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1|
 		gate: gate,
 	);
 	sig = Pan2.ar(sig, pan);
-	sig = sig*env*amp*0.1;
+	sig = sig*env*amp*0.35;
 	Out.ar(0,sig)
 }).add;
 
@@ -193,4 +196,4 @@ n.sendMsg('/buildUp', 0, ~id, 0);
 )
 
 //////////////////////////////////////////chat
-n.sendMsg('/chat',~id, "good night :)")
+n.sendMsg('/chat',~id, "good night")
