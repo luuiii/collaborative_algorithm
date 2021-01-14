@@ -16,18 +16,26 @@ dates:
 - implemented simple distributed markov chain
 - code structure of OSCdefs for multiple individual chains
 - simple sound
-- responding state chart for every one
 - state chart presentation prototype
+- new chain \buildUp with a threshold-reaching-retrigger machanism
+
+#### off-line to-do:
+- optimize the performing window content
+- optimize the \buildUp sound
 
 #### to-do:
+- add kill and start for chains
 - build connection between chains
-- rethink about waitTime map frequency. this blurred the identity too much. do we want that?
-- granular synthesis
-- a new chain with a threshold reaching retrigger machanism that let a same processs grow over and over but always with various time path - sound with varing spectrum (DynKlang)
+
+- new sound mapping for \slow and \fast 
+- work on performance structures
+
+- decide what to show on the performing window
 
 #### idea-box:
+- granular synthesis
 - chain modulate chain?
-- would be cool to be able to kill a chain and start a new one. (what does it mean in communication?) This may get us out of the force of (automatically) making dissicion. 
+- \buildUp structure >> the freq-array morphing
 
 
 
