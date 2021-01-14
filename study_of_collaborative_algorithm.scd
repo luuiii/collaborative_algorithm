@@ -20,7 +20,7 @@ n = NetAddr("127.0.0.1", 57140);
 ~userList = [0, 1, 2];
 
 ~histo = ();
-
+~chat = [];
 ~histogram = {|name| (~histo[name]?[])[..0].collect({|msg|
 	var from = msg[0];
 	var to = msg[1];
@@ -31,11 +31,9 @@ n = NetAddr("127.0.0.1", 57140);
 
 ~respond = {|n| n==~id};
 
-~partialVolumes = (0.01.dup(5)++[ 0.0048505041599274, 0.0024618295431137, 0.0044890878200531, 0.0059495476484299, 0.0040295634269714, 0.0015437886714935]);
+~partialVolumes = [ 0.14, 0.105, 0.07, 0.07, 0.035, 0.0175, 0.0315, 0.07, 0.028, 0.01, 0.01];
 
-~partialList = [
-	30, 45.23333, 71, 120, 162, 193.1, 311.22, 425.667, 511.11, 939, 1122.1111
-];
+~partialList = [71, 120, 162, 193.1, 311.22, 425.667, 511.11, 939, 1022.1111, 2000, 3133] * Array.series(11,1,0);
 
 ~partialThreshold = 11;
 ~partialCount = 0;
@@ -63,14 +61,27 @@ n = NetAddr("127.0.0.1", 57140);
 };
 
 SynthDef(\sine, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1|
-	var sig = SinOsc.ar(freq + LFNoise2.kr(1, 3));
+	var sig = SinOsc.ar(freq + LFNoise2.kr(1, 0));
 	var env = EnvGen.kr(
 		Env([0, 1, 0], [attack, Rand(5, 10)], releaseNode: 1),
 		doneAction: 2,
 		gate: gate,
 	);
 	sig = Pan2.ar(sig, pan);
-	sig = sig*env*amp*0.35;
+	sig = sig*env*amp;
+	Out.ar(0,sig)
+}).add;
+
+
+SynthDef(\braid, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1|
+	var sig = SinOsc.ar(freq.lag(10));
+	var env = EnvGen.kr(
+		Env([0, 1, 0], [attack, 10], releaseNode: 1),
+		doneAction: 2,
+		gate: gate,
+	);
+	sig = Pan2.ar(sig, pan);
+	sig = sig*env*amp;
 	Out.ar(0,sig)
 }).add;
 
@@ -100,7 +111,24 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 			\dur: waitTime.value() * 0.5,
 		])
 	});
-}
+};
+
+~freqList = [400,400,400];
+~maxDiff = 100;
+~applyFreqChange = {|index, change|
+	var wish_freqs = ~freqList.collect({|item,i| if(i==index,{item + change},{item})});
+	var freq_diff = wish_freqs.maxItem - wish_freqs.minItem;
+	"wish_freqs"++wish_freqs.postln;
+	"freq_diff" ++freq_diff.postln;
+	if(freq_diff > ~maxDiff,{
+		if(change>0,{
+			~freqList[index] = wish_freqs.minItem + ~maxDiff
+		},{~freqList[index] = wish_freqs.maxItem - ~maxDiff})
+	},{~freqList[index] = ~freqList[index]+change});
+	~freqList.postln;
+};
+~braidisInitialized = false;
+~braidSynth = [];
 )
 
 
@@ -115,8 +143,8 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 ~configs = [(
 	// Slower queue with longer wait time
 	name: \slow,
-	waitTime: {rrand(4, 5)},
-	nextTarget: {~userList.reject(_==~id).choose},
+	waitTime: {rrand(0.4, 2.5)},
+	nextTarget: 1/*{~userList.reject(_==~id).choose}*/,
 	// Weight choose
 	// nextTarget: {~userList.reject(_==~id).wchoose([0.1, 0.9])}
 	// Fixed target, alwasy send to this
@@ -124,14 +152,14 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 ),  (
 	// Faster queue
 	name: \fast,
-	waitTime: {rrand(0.3, 1.5)},
+	waitTime: {rrand(0.05, 0.5)},
 	// waitTime: {[rrand(0.04,  0.05), rrand(0.4, 4)].wchoose([0.8, 0.2])},
-	nextTarget: {~userList.reject(_==~id).choose};
+	nextTarget: 1/*{~userList.reject(_==~id).choose}*/;
 ), (
 	// Build up queue
 	name: \buildUp,
-	waitTime: {rrand(5, 10)},
-	nextTarget: {~userList.reject(_==~id).choose};
+	waitTime: {rrand(2.2, 6.5)},
+		nextTarget: 1 /*{~userList.reject(_==~id).choose}*/;
 )
 ];
 
@@ -169,7 +197,21 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 });
 
 OSCdef(\chat,{|msg|
-	(~userNameList[msg[1]]++": "++(msg[2]).asString).postln},\chat);
+	var format = ~userNameList[msg[1]]++": "++(msg[2]).asString;
+	format.postln;
+	~chat = ~chat ++ [format];
+},\chat);
+
+OSCdef(\apply_freq,{|msg|
+	if(~braidisInitialized == false,{
+		"flase".postln;
+		~braidSynth = ~freqList.collect({|item, index| Synth(\braid, [\freq,item, \pan,[-1,0,1][index]])});
+		~braidisInitialized = true;
+	},{
+		~applyFreqChange.value(msg[1],msg[2]);
+		~braidSynth[msg[1]].set(\freq, ~freqList[msg[1]])
+	})
+},\braid)
 )
 
 
@@ -195,5 +237,8 @@ to.postln;
 n.sendMsg('/buildUp', 0, ~id, 0);
 )
 
+(//change freq
+n.sendMsg('/braid',~id,-5);
+)
 //////////////////////////////////////////chat
-n.sendMsg('/chat',~id, "good night")
+n.sendMsg('/chat',~id, "[ _  _  _ ]")
