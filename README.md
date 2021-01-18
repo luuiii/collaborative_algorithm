@@ -4,7 +4,7 @@
 
 dates:
 - ~~Deadline of application for IMWI-concert:2020.11.30~~
-- ~~IMWI-concert: 2021.01.29~~canceled
+- ~~IMWI-concert: 2021.01.29~~ canceled
 - TOPLAP Birthday Stream - 19.Feb.2021 - CET 21:00 - 01:00
 
 #### Questions:
