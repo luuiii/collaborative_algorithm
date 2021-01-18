@@ -4,10 +4,10 @@
 
 dates:
 - ~~Deadline of application for IMWI-concert:2020.11.30~~
-- IMWI-concert: 2021.01.29
-- (?) Live coding concert: unknown
+- ~~IMWI-concert: 2021.01.29~~canceled
+- TOPLAP Birthday Stream - 19.Feb.2021 - CET 21:00 - 01:00
 
-#### Study of Collaborative Algorithm: <br>
+#### Questions:
 - Algorithm in context of Network Music: how could Algorithm be collaborative and distributed?
 - If we understand algorithm as function, (how) could they be composed together?
 - What ist one's identity in collaborative algorithm?
