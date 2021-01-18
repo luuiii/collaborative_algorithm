@@ -29,7 +29,7 @@ n = NetAddr("127.0.0.1", 57140);
 //	array.postln;
 })[0]};
 
-~respond = {|n| n==~id};
+~respondChecker = {|n| n==~id};
 
 ~partialVolumes = [ 0.14, 0.105, 0.07, 0.07, 0.035, 0.0175, 0.0315, 0.07, 0.028, 0.01, 0.01];
 
@@ -134,7 +134,6 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 
 ////////////////////////////////////universal_implementation
 ////////////////////////////////////receive
-
 (
 // Configs for the message queue
 // To Performers:
@@ -154,7 +153,7 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	name: \fast,
 	waitTime: {rrand(0.05, 0.5)},
 	// waitTime: {[rrand(0.04,  0.05), rrand(0.4, 4)].wchoose([0.8, 0.2])},
-	nextTarget: 1/*{~userList.reject(_==~id).choose}*/;
+	nextTarget: 0/*{~userList.reject(_==~id).choose}*/;
 ), (
 	// Build up queue
 	name: \buildUp,
@@ -163,17 +162,18 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 )
 ];
 
-
 ~configs.collect({|config, index|
 	OSCdef(config.name.asSymbol, {|msg|
 		var from = msg[2];
-		var to = msg[1];
+		var receiver = msg[1];
 		var lastWaitTime = msg[3];
-		~histo[config.name] = (~histo[config.name]?[]).insert(0, [from, to]);
-		(config.name.asString++":"++~histogram.value(config.name)).postln;
-		~play_message.(config.name.asSymbol, from, to, lastWaitTime);
+		var toRespond = ~respondChecker.(receiver);
 
-		if(~respond.(msg[1]),
+		~histo[config.name] = (~histo[config.name]?[]).insert(0, [from, receiver]);
+		(config.name.asString++":"++~histogram.value(config.name)).postln;
+		~play_message.(config.name.asSymbol, from, receiver, lastWaitTime);
+
+		if(toRespond,
 			{
 				{
 					var nextTarget = config.nextTarget.value();
@@ -186,9 +186,13 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 					("***********").postln;
 					waitTime.wait;
 
-					(msg[1] +" sending next message to " ++ nextTarget.asString).postln;
 
-					n.sendMsg(config.name, nextTarget, ~id, waitTime);
+					if (nextTarget.isNil, {
+						(config.name +" sending nil, stopped").postln;
+					}, {
+						(receiver +" sending next message to " ++ nextTarget.asString).postln;
+						n.sendMsg(config.name, nextTarget, ~id, waitTime);
+					});
 			}.fork;},{
 				//else?
 		});
