@@ -8,7 +8,6 @@
 
 //to-do: maybe play a bit with sound
 
-
 (
 n = NetAddr("127.0.0.1", 57140);
 // The performer's ID
@@ -73,16 +72,21 @@ SynthDef(\sine, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1|
 }).add;
 
 
-SynthDef(\braid, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1|
+SynthDef(\braid, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1, freqBus = 0|
+	var detectedFreq, hasFreq;
 	var sig = SinOsc.ar(freq.lag(10));
 	var env = EnvGen.kr(
 		Env([0, 1, 0], [attack, 10], releaseNode: 1),
 		doneAction: 2,
 		gate: gate,
 	);
+
+	#detectedFreq, hasFreq = Pitch.kr(sig);
 	sig = Pan2.ar(sig, pan);
 	sig = sig*env*amp;
-	Out.ar(0,sig)
+
+	Out.ar(0, sig);
+	Out.kr(freqBus, [detectedFreq]);
 }).add;
 
 SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
@@ -113,8 +117,11 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	});
 };
 
-~freqList = [400,400,400];
+// Braid configs
+~freqList = [404, 400, 396];
 ~maxDiff = 100;
+~braidBus = Bus.new(\control, 0, ~userList.size);
+
 ~applyFreqChange = {|index, change|
 	var wish_freqs = ~freqList.collect({|item,i| if(i==index,{item + change},{item})});
 	var freq_diff = wish_freqs.maxItem - wish_freqs.minItem;
@@ -129,6 +136,7 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 };
 ~braidisInitialized = false;
 ~braidSynth = [];
+
 )
 
 
@@ -139,26 +147,28 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 // To Performers:
 // You need to change this configs value and then evaluate the entire
 // block
+
+// Tips for changing the configs for different chains:
+// ### Weight choose
+// waitTime: {[rrand(0.04,  0.05), rrand(0.4, 4)].wchoose([0.8, 0.2])},
+// nextTarget: {~userList.reject(_==~id).wchoose([0.1, 0.9])}
+// ### Fixed target, alwasy send to this
+// nextTarget: {0}
 ~configs = [(
 	// Slower queue with longer wait time
 	name: \slow,
 	waitTime: {rrand(0.4, 2.5)},
-	nextTarget: 1/*{~userList.reject(_==~id).choose}*/,
-	// Weight choose
-	// nextTarget: {~userList.reject(_==~id).wchoose([0.1, 0.9])}
-	// Fixed target, alwasy send to this
-	// nextTarget: {0}
+	nextTarget: {~userList.reject(_==~id).choose},
 ),  (
 	// Faster queue
 	name: \fast,
 	waitTime: {rrand(0.05, 0.5)},
-	// waitTime: {[rrand(0.04,  0.05), rrand(0.4, 4)].wchoose([0.8, 0.2])},
-	nextTarget: 0/*{~userList.reject(_==~id).choose}*/;
+	nextTarget: {~userList.reject(_==~id).choose}
 ), (
 	// Build up queue
 	name: \buildUp,
 	waitTime: {rrand(2.2, 6.5)},
-		nextTarget: 1 /*{~userList.reject(_==~id).choose}*/;
+	nextTarget: {~userList.reject(_==~id).choose}
 )
 ];
 
@@ -208,16 +218,21 @@ OSCdef(\chat,{|msg|
 
 OSCdef(\apply_freq,{|msg|
 	if(~braidisInitialized == false,{
-		"flase".postln;
-		~braidSynth = ~freqList.collect({|item, index| Synth(\braid, [\freq,item, \pan,[-1,0,1][index]])});
+		"braidSynth Initialized ".postln;
 		~braidisInitialized = true;
+		~braidSynth = ~freqList.collect({|item, index|
+			Synth(\braid, [
+				\freq, item,
+				\pan,[-1,0,1][index],
+				\freqBus, ~braidBus.index + index,
+			]);
+		});
 	},{
 		~applyFreqChange.value(msg[1],msg[2]);
 		~braidSynth[msg[1]].set(\freq, ~freqList[msg[1]])
 	})
-},\braid)
+}, \braid)
 )
-
 
 // **** Trigger the piece
 (
@@ -241,8 +256,11 @@ to.postln;
 n.sendMsg('/buildUp', 0, ~id, 0);
 )
 
-(//change freq
-n.sendMsg('/braid',~id,-5);
+(
+// Send braid change
+// positive number means add freq to the oscillator
+// negative means minus
+n.sendMsg('/braid', ~id, 5);
 )
 //////////////////////////////////////////chat
-n.sendMsg('/chat',~id, "[ _  _  _ ]")
+n.sendMsg('/chat',~id, "test")
