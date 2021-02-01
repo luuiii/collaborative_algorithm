@@ -260,7 +260,7 @@ n.sendMsg('/buildUp', 0, ~id, 0);
 // Send braid change
 // positive number means add freq to the oscillator
 // negative means minus
-n.sendMsg('/braid', ~id, 5);
+n.sendMsg('/braid', ~id, 10);
 )
 //////////////////////////////////////////chat
-n.sendMsg('/chat',~id, "test")
+n.sendMsg('/chat',~id, "~~~")
