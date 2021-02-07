@@ -20,7 +20,6 @@ n = NetAddr("127.0.0.1", 57140);
 
 ~histo = ();
 ~chat = [];
-~algo = [];
 ~histogram = {|name| (~histo[name]?[])[..0].collect({|msg|
 	var from = msg[0];
 	var to = msg[1];
@@ -137,6 +136,48 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 };
 ~braidisInitialized = false;
 ~braidSynth = [];
+
+// ************
+// Configs Sync
+// ************
+
+// global var that holds all performer's config value as string(For visual display)
+// userId -> { chainName -> { waitTime -> ...., nextTarget -> ....} }
+// eg. Dictionary[ (0 -> Dictionary[ (fast -> ...), (slow -> ... ]), ...]
+~userChainVisualConfigs = Dictionary.new;
+
+~getUserConfigsValue = {|configs|
+	var configsFnStore = Dictionary.new;
+
+	// ("***Syncing chain config for user: " ++ ~userNameList[~id]).postln;
+	configs.postln;
+	configs.collect({|chain|
+		var chainStore = Dictionary.new;
+		chain.keysValuesDo({|key, value|
+			chainStore.put(key, value.postString);
+		});
+		chainStore.postln;
+		configsFnStore.put(chainStore.at(\name).asSymbol, chainStore);
+	});
+
+	configsFnStore;
+};
+
+OSCdef(\syncConfigs, {|msg|
+	var userId = msg[1];
+	var config = msg[2].asString.interpret;
+
+	~userChainVisualConfigs[userId] = config;
+}, \syncConfigs);
+
+
+~syncChainConfigs = {
+	n.sendMsg(
+		'/syncConfigs',
+		~id,
+		~getUserConfigsValue.(~configs).asCompileString
+	)
+}
 )
 
 
@@ -158,7 +199,7 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	// Slower queue with longer wait time
 	name: \slow,
 	waitTime: {rrand(0.4, 2.5)},
-	nextTarget: {~userList.reject(_==~id).choose}
+	nextTarget: {~userList.reject(_==~id).choose},
 ),  (
 	// Faster queue
 	name: \fast,
@@ -171,6 +212,10 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	nextTarget: {~userList.reject(_==~id).choose}
 )
 ];
+
+
+// We need to sync chain configs for visual display
+~syncChainConfigs.value();
 
 ~configs.collect({|config, index|
 	OSCdef(config.name.asSymbol, {|msg|
@@ -260,7 +305,7 @@ n.sendMsg('/buildUp', 0, ~id, 0);
 // Send braid change
 // positive number means add freq to the oscillator
 // negative means minus
-n.sendMsg('/braid', 2, 11);
+n.sendMsg('/braid', ~id, 10);
 )
 //////////////////////////////////////////chat
-n.sendMsg('/chat',~id, "ojbk")
+n.sendMsg('/chat',~id, "~~~")
