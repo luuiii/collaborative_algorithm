@@ -154,6 +154,10 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	configs.collect({|chain|
 		var chainStore = Dictionary.new;
 		chain.keysValuesDo({|key, value|
+			var valueString = value.postString;
+			valueString = valueString.removing(valueString.first);
+			valueString = valueString.removing(valueString.last);
+
 			chainStore.put(key, value.postString);
 		});
 		chainStore.postln;
@@ -180,7 +184,6 @@ OSCdef(\syncConfigs, {|msg|
 }
 )
 
-
 ////////////////////////////////////universal_implementation
 ////////////////////////////////////receive
 (
@@ -198,21 +201,20 @@ OSCdef(\syncConfigs, {|msg|
 ~configs = [(
 	// Slower queue with longer wait time
 	name: \slow,
-	waitTime: {rrand(0.4, 2.5)},
-	nextTarget: {~userList.reject(_==~id).choose},
+	waitTime: {3},
+	nextTarget: {[0, 1, 2].choose},
 ),  (
 	// Faster queue
 	name: \fast,
-	waitTime: {rrand(0.05, 0.5)},
-	nextTarget: {~userList.reject(_==~id).choose}
+	waitTime: {0.3},
+	nextTarget: {[0, 1, 2].choose}
 ), (
 	// Build up queue
 	name: \buildUp,
-	waitTime: {rrand(2.2, 6.5)},
-	nextTarget: {~userList.reject(_==~id).choose}
+	waitTime: {10},
+	nextTarget: {[0, 1, 2].choose}
 )
 ];
-
 
 // We need to sync chain configs for visual display
 ~syncChainConfigs.value();
@@ -308,4 +310,4 @@ n.sendMsg('/buildUp', 0, ~id, 0);
 n.sendMsg('/braid', ~id, 10);
 )
 //////////////////////////////////////////chat
-n.sendMsg('/chat',~id, "~~~")
+n.sendMsg('/chat', ~id, "Hello")

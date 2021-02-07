@@ -23,6 +23,7 @@ var drawWidth = 0.1;
 
 // Get the display value for the chain and a key
 // for example: getValuesForKey.(\slow, \waitTime)
+//  -> ["{1}", "", "{rrand(0.2, 0.5}"]
 var getValuesForKey = {|chain, key|
 	(0..2).collect({|index|
 		try { ~userChainVisualConfigs[index][chain][key] } { |error|
