@@ -21,6 +21,17 @@ var pathBraid = [];
 var movingSpeed = 1 * scale;
 var drawWidth = 0.1;
 
+// Get the display value for the chain and a key
+// for example: getValuesForKey.(\slow, \waitTime)
+var getValuesForKey = {|chain, key|
+	(0..2).collect({|index|
+		try { ~userChainVisualConfigs[index][chain][key] } { |error|
+			""
+		};
+	})
+};
+
+
 ~lineshow = {|items, space|
 	if(items.isNil,{
 		"";
@@ -55,21 +66,38 @@ line_chat3 = StaticText.new(w, Rect(indentChat, chatPosY + (2 * chatLineSpace), 
 line_chat4 = StaticText.new(w, Rect(indentChat, chatPosY + (3 * chatLineSpace), width, height)).font_(Font("courier", 12 * scale));
 line_chat5 = StaticText.new(w, Rect(indentChat, chatPosY + (4 * chatLineSpace), width, height)).font_(Font("courier", 12 * scale));
 
+
 w.front;
 r = {
 	inf.do { |i|
 		{
-			line1.string_(~lineshow.value(~histogram.value(\fast),55));
-			line2.string_(~lineshow.value(~histogram.value(\slow),88));
-			line3.string_(~lineshowBuild.value(~histogram.value(\buildUp),88));
+			line1.string_(~lineshow.value(~histogram.value(\fast), 55));
+			line2.string_(~lineshow.value(~histogram.value(\slow), 88));
+			line3.string_(~lineshowBuild.value(~histogram.value(\buildUp), 88));
 
-				line1_algo1.string_(~lineshow.((0..2).collect({|index| ~userChainVisualConfigs[index][\fast][\waitTime]}),128)).stringColor_(Color.gray);
-				line2_algo1.string_(~lineshow.((0..2).collect({|index| ~userChainVisualConfigs[index][\slow][\waitTime]}),128)).stringColor_(Color.gray);
-				line3_algo1.string_(~lineshow.((0..2).collect({|index| ~userChainVisualConfigs[index][\buildUp][\waitTime]}),128)).stringColor_(Color.gray);
+			line1_algo1.string_(
+				~lineshow.(getValuesForKey.(\fast, \waitTime), 128)
+			).stringColor_(Color.gray);
 
-				line1_algo2.string_(~lineshow.((0..2).collect({|index| ~userChainVisualConfigs[index][\fast][\nextTarget]}),108)).stringColor_(Color.gray);
-				line2_algo2.string_(~lineshow.((0..2).collect({|index| ~userChainVisualConfigs[index][\slow][\nextTarget]}),108)).stringColor_(Color.gray);
-				line3_algo2.string_(~lineshow.((0..2).collect({|index| ~userChainVisualConfigs[index][\buildUp][\nextTarget]}),108)).stringColor_(Color.gray);
+			line2_algo1.string_(
+				~lineshow.(getValuesForKey.(\slow, \waitTime), 128)
+			).stringColor_(Color.gray);
+
+			line3_algo1.string_(
+				~lineshow.(getValuesForKey.(\buildUp, \waitTime), 128)
+			).stringColor_(Color.gray);
+
+			line1_algo2.string_(
+				~lineshow.(getValuesForKey.(\fast, \nextTarget), 108)
+			).stringColor_(Color.gray);
+
+			line2_algo2.string_(
+				~lineshow.(getValuesForKey.(\slow, \nextTarget), 108)
+			).stringColor_(Color.gray);
+
+			line3_algo2.string_(
+				~lineshow.(getValuesForKey.(\buildUp, \nextTarget), 108)
+			).stringColor_(Color.gray);
 
 			line_chat1.string_(~chat.reverse[4]?"").stringColor_(Color.white);
 			line_chat2.string_(~chat.reverse[3]?"").stringColor_(Color.white);
