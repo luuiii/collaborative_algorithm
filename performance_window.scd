@@ -1,13 +1,24 @@
 (
-
-var scale = 1;
+var scale = 1; //1.5 for full HD
 var width = 1280 * scale;
 var height = 720 * scale;
-var line1, line2, line3, line4, line5, line6, line7, line8, line9;
+var line1, line2, line3;
+var line1_algo1, line2_algo1, line3_algo1;
+var line1_algo2, line2_algo2, line3_algo2;
+var line_chat1, line_chat2, line_chat3, line_chat4, line_chat5;
 
-var run = true;//braid
-var path = [];
-var movingSpeed = 1;
+var indent = 0.03125 * width;
+var indentChat = 0.4 * width;
+var posY = -0.375 * height;
+var algo_space = 0.05 * height;
+var lineSpace = 0.17 * height;
+var chatPosY = 0.3 * height;
+var chatLineSpace = 0.025 * height;
+
+var runBraid = true;//braid
+var indentBraid = 0.015 * width;
+var pathBraid = [];
+var movingSpeed = 1 * scale;
 var drawWidth = 0.1;
 
 ~lineshow = {|items, space|
@@ -16,135 +27,106 @@ var drawWidth = 0.1;
 	},{
 		items.collect({|i| i = i.asString++(" "!space).join}).join;
 	})
-	};
+};
 ~lineshowBuild = {|items, space|
 	if(items.isNil,{
 		"";
 	},{ ~partialCount })
-	};
+};
 
-w = Window.new(name:"numbers", bounds:Rect(0, 0, width, height));
+w = Window.new(name:"[ _  _  _ ]", bounds:Rect(0, 0, width, height));
 w.view.background = Color.black;
 
-a = CompositeView.new(w,Rect(0,0,width,height/5));
-a.background= Color.black;
+line1 = StaticText.new(w, Rect(indent, posY + (0*lineSpace), width, height)).font_(Font("sansSerif",32 * scale)).stringColor_(Color.white);
+line2 = StaticText.new(w, Rect(indent, posY + (1*lineSpace), width, height)).font_(Font("sansSerif",20 * scale)).stringColor_(Color.white);//fromHexString("#0600FF");
+line3 = StaticText.new(w, Rect(indent, posY + (2*lineSpace), width, height)).font_(Font("sansSerif",20 * scale)).stringColor_(Color.red);
 
-line1 = StaticText.new(w,Rect(40,-200,width,height)).string_("fast");
-line2 = StaticText.new(w,Rect(40,-155,width,height)).string_("slow");
-line3 = StaticText.new(w,Rect(40,-125,width,height)).string_("buildup");
-//
-line4 = StaticText.new(w,Rect(500,-75,width,height)).string_(" ");
-line5 = StaticText.new(w,Rect(500,-55,width,height)).string_(" ");
-line6 = StaticText.new(w,Rect(500,-35,width,height)).string_(" ");
-line7 = StaticText.new(w,Rect(500,-15,width,height)).string_(" ");
-line8 = StaticText.new(w,Rect(500,5,width,height)).string_(" ");
-line9 = StaticText.new(w,Rect(500,25,width,height)).string_(" ");
-//
-line1.stringColor = Color.white;
-line2.stringColor = Color.red;
-line3.stringColor = Color.white;
-line4.stringColor = Color.white;
-line5.stringColor = Color.white;
-line6.stringColor = Color.white;
-line7.stringColor = Color.white;
-line8.stringColor = Color.white;
-line9.stringColor = Color.white;
-//
-line1.align_(\left);
-line2.align_(\left);
-line3.align_(\left);
-line4.align_(\left);
-line5.align_(\left);
-line6.align_(\left);
-line7.align_(\left);
-line8.align_(\left);
-line9.align_(\left);
-//
-line1.font = Font("sansSerif",32);
-line2.font = Font("sansSerif",20);
-line3.font = Font("sansSerif",20);
-line4.font = Font("courier", 12);
-line5.font = Font("courier", 12);
-line6.font = Font("courier", 12);
-line7.font = Font("courier", 12);
-line8.font = Font("courier", 12);
-line9.font = Font("courier", 12);
+line1_algo1 = StaticText.new(w, Rect(indent, posY + algo_space + (0*lineSpace), width, height)).font_(Font("sansSerif",10 * scale));
+line2_algo1 = StaticText.new(w, Rect(indent, posY + algo_space + (1*lineSpace), width, height)).font_(Font("sansSerif",10 * scale));
+line3_algo1 = StaticText.new(w, Rect(indent, posY + algo_space + (2*lineSpace), width, height)).font_(Font("sansSerif",10 * scale));
 
+line1_algo2 = StaticText.new(w, Rect(indent, posY + (2 * algo_space) + (0*lineSpace), width, height)).font_(Font("sansSerif",10 * scale));
+line2_algo2 = StaticText.new(w, Rect(indent, posY + (2 * algo_space) + (1*lineSpace), width, height)).font_(Font("sansSerif",10 * scale));
+line3_algo2 = StaticText.new(w, Rect(indent, posY + (2 * algo_space) + (2*lineSpace), width, height)).font_(Font("sansSerif",10 * scale));
 
+line_chat1 = StaticText.new(w, Rect(indentChat, chatPosY + (0 * chatLineSpace), width, height)).font_(Font("courier", 12 * scale));
+line_chat2 = StaticText.new(w, Rect(indentChat, chatPosY + (1 * chatLineSpace), width, height)).font_(Font("courier", 12 * scale));
+line_chat3 = StaticText.new(w, Rect(indentChat, chatPosY + (2 * chatLineSpace), width, height)).font_(Font("courier", 12 * scale));
+line_chat4 = StaticText.new(w, Rect(indentChat, chatPosY + (3 * chatLineSpace), width, height)).font_(Font("courier", 12 * scale));
+line_chat5 = StaticText.new(w, Rect(indentChat, chatPosY + (4 * chatLineSpace), width, height)).font_(Font("courier", 12 * scale));
 
 w.front;
 r = {
-inf.do { |i|
-thisThread.randSeed_(1284);
-{
-line1.string_(~lineshow.value(~histogram.value(\fast),55));
-line2.string_(~lineshow.value(~histogram.value(\slow),88));
-line3.string_(~lineshow.value(~histogram.value(\buildUp),88));
-//	line4.string_(~chat.reverse[5]);
-			line5.string_(~chat.reverse[4]?"");
-line6.string_(~chat.reverse[3]?"");
-line7.string_(~chat.reverse[2]?"");
-line8.string_(~chat.reverse[1]?"");
-line9.string_(~chat.reverse[0]?"");
+	inf.do { |i|
+		{
+			line1.string_(~lineshow.value(~histogram.value(\fast),55));
+			line2.string_(~lineshow.value(~histogram.value(\slow),88));
+			line3.string_(~lineshowBuild.value(~histogram.value(\buildUp),88));
 
-}.defer;
-0.15.wait;
-}
+			line1_algo1.string_(~lineshow.(["{0.05}","{(0.01..0.09).choose}","{rrand(0.1,3)}"].scramble,128)).stringColor_(Color.gray);
+			line2_algo1.string_(~lineshow.(["{0.05}","{(0.01..0.09).choose}","{rrand(0.1,3)}"].scramble,128)).stringColor_(Color.gray);
+			line3_algo1.string_(~lineshow.(["{0.05}","{(0.01..0.09).choose}","{rrand(0.1,3)}"].scramble,128)).stringColor_(Color.gray);
+
+			line1_algo2.string_(~lineshow.(["{1}","{(1,2).choose}","{rrand(0.1,3)}"].scramble,128)).stringColor_(Color.gray);
+			line2_algo2.string_(~lineshow.(["{2}","{(1,2).choose}","{rrand(0.1,3)}"].scramble,128)).stringColor_(Color.gray);
+			line3_algo2.string_(~lineshow.(["{0}","{(1,2,3).choose}","{rrand(0.1,3)}"].scramble,128)).stringColor_(Color.gray);
+
+			line_chat1.string_(~chat.reverse[4]?"").stringColor_(Color.white);
+			line_chat2.string_(~chat.reverse[3]?"").stringColor_(Color.white);
+			line_chat3.string_(~chat.reverse[2]?"").stringColor_(Color.white);
+			line_chat4.string_(~chat.reverse[1]?"").stringColor_(Color.white);
+			line_chat5.string_(~chat.reverse[0]?"").stringColor_(Color.white);
+
+		}.defer;
+		0.15.wait;
+	}
 }.fork;
 
 Routine {
-		inf.do{|j|
-			~braidBus.get({ |v|
-				{
+	inf.do{|j|
+		~braidBus.get({ |v|
+			{
 				if((w.isClosed.not)&&(~braidisInitialized)) {
-						w.drawFunc = {
-							Pen.use {
-								Pen.width = 0.01;
-								Pen.color = Color.white;
+					w.drawFunc = {
+						Pen.use {
+							Pen.width = 1;
+							Pen.color = Color.white;
 
-								path = path ++ [v];
-							path = path.keep(-1*(width-40).asInt);
-								3.do {|i|
-									Pen.width = 1;
-
-									Pen.beginPath;
-
-									path.collect({|p, q|
-										Pen.moveTo(
-											Point(
-											20 + (q*movingSpeed),
-												path[q][i].linlin(50, 1700, 650,50/*200, 120*/)
-											)//15/4 15/6
-										);
-
-										Pen.lineTo(
-											Point(
-											20.5 + (q*movingSpeed),
-												path[q][i].linlin(50, 1700, 650,50/*200, 120*/)
-											)
-										);
-
-										Pen.stroke;
-									})
-								};
+							pathBraid = pathBraid ++ [v];
+							pathBraid = pathBraid.keep(-1*(width-(2*indentBraid)).asInt);
+							3.do {|i|
+								Pen.beginPath;
+								pathBraid.collect({|p, q|
+									Pen.moveTo(
+										Point(
+											indentBraid + (q*movingSpeed),
+											pathBraid[q][i].linlin(50, 1700, 0.9*height, 0.07*height)
+										)
+									);
+									Pen.lineTo(
+										Point(
+											indentBraid*1.025 + (q*movingSpeed),
+											pathBraid[q][i].linlin(50, 1700, 0.9*height, 0.07*height)
+										)
+									);
+									Pen.stroke;
+								})
 							};
 						};
-					}
-				}.defer
-			});
-
-			0.08.wait;
-
-			{ while { run } { w.refresh; 0.08.wait } }.fork(AppClock);
-		}
-
-	}.play;
+					};
+				}
+			}.defer
+		});
+		0.08.wait;
+		{ while { runBraid } { w.refresh; 0.08.wait } }.fork(AppClock);
+	}
+}.play;
 
 CmdPeriod.doOnce({ w.close });
-w.onClose_({ r.stop; run = false;});
+w.onClose_({ r.stop; runBraid = false;});
 )
 
-w.close
+w.close//just in case
 
 
 //
@@ -152,4 +134,3 @@ w.close
 // 	((i == 0)||(i == 1)||(i == 2)).if({i = ~partialCount});
 // 	i = i.asString++(" "!88).join;
 // }).join})
-
