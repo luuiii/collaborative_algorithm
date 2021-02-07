@@ -1,5 +1,5 @@
 (
-var scale = 1; //1.5 for full HD
+var scale = 0.75; //1.5 for full HD
 var width = 1280 * scale;
 var height = 720 * scale;
 var line1, line2, line3;
@@ -10,7 +10,7 @@ var line_chat1, line_chat2, line_chat3, line_chat4, line_chat5;
 var indent = 0.03125 * width;
 var indentChat = 0.4 * width;
 var posY = -0.375 * height;
-var algo_space = 0.05 * height;
+var algo_space = 0.04 * height;
 var lineSpace = 0.17 * height;
 var chatPosY = 0.3 * height;
 var chatLineSpace = 0.025 * height;
@@ -63,13 +63,13 @@ r = {
 			line2.string_(~lineshow.value(~histogram.value(\slow),88));
 			line3.string_(~lineshowBuild.value(~histogram.value(\buildUp),88));
 
-			line1_algo1.string_(~lineshow.(["{0.05}","{(0.01..0.09).choose}","{rrand(0.1,3)}"].scramble,128)).stringColor_(Color.gray);
-			line2_algo1.string_(~lineshow.(["{0.05}","{(0.01..0.09).choose}","{rrand(0.1,3)}"].scramble,128)).stringColor_(Color.gray);
-			line3_algo1.string_(~lineshow.(["{0.05}","{(0.01..0.09).choose}","{rrand(0.1,3)}"].scramble,128)).stringColor_(Color.gray);
+				line1_algo1.string_(~lineshow.((0..2).collect({|index| ~userChainVisualConfigs[index][\fast][\waitTime]}),128)).stringColor_(Color.gray);
+				line2_algo1.string_(~lineshow.((0..2).collect({|index| ~userChainVisualConfigs[index][\slow][\waitTime]}),128)).stringColor_(Color.gray);
+				line3_algo1.string_(~lineshow.((0..2).collect({|index| ~userChainVisualConfigs[index][\buildUp][\waitTime]}),128)).stringColor_(Color.gray);
 
-			line1_algo2.string_(~lineshow.(["{1}","{(1,2).choose}","{rrand(0.1,3)}"].scramble,128)).stringColor_(Color.gray);
-			line2_algo2.string_(~lineshow.(["{2}","{(1,2).choose}","{rrand(0.1,3)}"].scramble,128)).stringColor_(Color.gray);
-			line3_algo2.string_(~lineshow.(["{0}","{(1,2,3).choose}","{rrand(0.1,3)}"].scramble,128)).stringColor_(Color.gray);
+				line1_algo2.string_(~lineshow.((0..2).collect({|index| ~userChainVisualConfigs[index][\fast][\nextTarget]}),108)).stringColor_(Color.gray);
+				line2_algo2.string_(~lineshow.((0..2).collect({|index| ~userChainVisualConfigs[index][\slow][\nextTarget]}),108)).stringColor_(Color.gray);
+				line3_algo2.string_(~lineshow.((0..2).collect({|index| ~userChainVisualConfigs[index][\buildUp][\nextTarget]}),108)).stringColor_(Color.gray);
 
 			line_chat1.string_(~chat.reverse[4]?"").stringColor_(Color.white);
 			line_chat2.string_(~chat.reverse[3]?"").stringColor_(Color.white);
