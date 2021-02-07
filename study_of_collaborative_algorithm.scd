@@ -158,9 +158,10 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 			valueString = valueString.removing(valueString.first);
 			valueString = valueString.removing(valueString.last);
 
-			chainStore.put(key, value.postString);
+			chainStore.put(key, valueString);
 		});
 		chainStore.postln;
+
 		configsFnStore.put(chainStore.at(\name).asSymbol, chainStore);
 	});
 
@@ -202,7 +203,7 @@ OSCdef(\syncConfigs, {|msg|
 	// Slower queue with longer wait time
 	name: \slow,
 	waitTime: {3},
-	nextTarget: {[0, 1, 2].choose},
+	nextTarget: {[0, 1, 2].choose}
 ),  (
 	// Faster queue
 	name: \fast,
@@ -310,4 +311,5 @@ n.sendMsg('/buildUp', 0, ~id, 0);
 n.sendMsg('/braid', ~id, 10);
 )
 //////////////////////////////////////////chat
+
 n.sendMsg('/chat', ~id, "Hello")
