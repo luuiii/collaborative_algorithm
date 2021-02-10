@@ -75,12 +75,12 @@ SynthDef(\sine, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1|
 }).add;
 
 
-SynthDef(\braid, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1, freqBus = 0|
+SynthDef(\braid, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1, freqBus = 0, release=10|
 	var detectedFreq, hasFreq;
 	var lagFreq = freq.lag(10);
 	var sig = SinOsc.ar(lagFreq);
 	var env = EnvGen.kr(
-		Env([0, 1, 0], [attack, 10], releaseNode: 1),
+		Env([0, 1, 0], [attack, release], releaseNode: 1),
 		doneAction: 2,
 		gate: gate,
 	);
@@ -129,17 +129,71 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 ~applyFreqChange = {|index, change|
 	var wish_freqs = ~freqList.collect({|item,i| if(i==index,{item + change},{item})});
 	var freq_diff = wish_freqs.maxItem - wish_freqs.minItem;
-	"wish_freqs"++wish_freqs.postln;
-	"freq_diff" ++freq_diff.postln;
+
 	if(freq_diff > ~maxDiff,{
 		if(change>0,{
 			~freqList[index] = wish_freqs.minItem + ~maxDiff
 		},{~freqList[index] = wish_freqs.maxItem - ~maxDiff})
 	},{~freqList[index] = ~freqList[index]+change});
 	~freqList.postln;
+	("***Braid freqs is: " ++ ~freqList ++ " Max diff: " ++ ~maxDiff).postln
+
 };
 ~braidisInitialized = false;
 ~braidSynth = [];
+
+~killBraid = {
+	if(~braidisInitialized == true, {
+		"***Kill braid now!!".postln;
+		~braidSynth.collect{|synth|
+			synth.release;
+		};
+		~braidisInitialized = false;
+	});
+};
+
+~updateBraidMaxDiff = { |val|
+	if(val.isNumber, {
+		("***Update braid max diff to :" ++ val).postln;
+		~maxDiff = val;
+	}, {
+		("***!!Invalid braid max diff  :" ++ val).postln;
+	});
+};
+
+
+OSCdef(\apply_freq,{|msg|
+	if(~braidisInitialized == false,{
+		"braidSynth Initialized ".postln;
+		~braidisInitialized = true;
+		~braidSynth = ~freqList.collect({|item, index|
+			Synth(\braid, [
+				\freq, item,
+				\pan, [-1,0,1][index],
+				\freqBus, ~braidBus.index + index,
+			]);
+		});
+	},{
+		~applyFreqChange.value(msg[1],msg[2]);
+		~braidSynth[msg[1]].set(\freq, ~freqList[msg[1]])
+	})
+}, \braid);
+
+OSCdef(\braid_update_maxdiff, {|msg|
+	~updateBraidMaxDiff.(msg[1])
+}, \braid_update_maxdiff);
+
+OSCdef(\braid_kill, {|msg|
+	~killBraid.();
+}, \braid_kill);
+
+
+// Chat OSCDef
+OSCdef(\chat, {|msg|
+	var format = ~userNameList[msg[1]]++": "++(msg[2]).asString;
+	format.postln;
+	~chat = ~chat ++ [format];
+},\chat);
 
 // ************
 // Configs Sync
@@ -263,31 +317,7 @@ OSCdef(\syncConfigs, {|msg|
 				//else?
 		});
 	}, config.name.asSymbol).postln;
-
 });
-
-OSCdef(\chat,{|msg|
-	var format = ~userNameList[msg[1]]++": "++(msg[2]).asString;
-	format.postln;
-	~chat = ~chat ++ [format];
-},\chat);
-
-OSCdef(\apply_freq,{|msg|
-	if(~braidisInitialized == false,{
-		"braidSynth Initialized ".postln;
-		~braidisInitialized = true;
-		~braidSynth = ~freqList.collect({|item, index|
-			Synth(\braid, [
-				\freq, item,
-				\pan,[-1,0,1][index],
-				\freqBus, ~braidBus.index + index,
-			]);
-		});
-	},{
-		~applyFreqChange.value(msg[1],msg[2]);
-		~braidSynth[msg[1]].set(\freq, ~freqList[msg[1]])
-	})
-}, \braid)
 )
 
 // **** Trigger the piece
@@ -318,6 +348,13 @@ n.sendMsg('/buildUp', 0, ~id, 0);
 // negative means minus
 n.sendMsg('/braid', ~id, 1);
 )
+
+// Kill braid!
+n.sendMsg('/braid_kill');
+
+// Update braid max diff! (in frequency)
+n.sendMsg('/braid_update_maxdiff', 200);
+
 //////////////////////////////////////////chat
 
 n.sendMsg('/chat', ~id, "Hello")
