@@ -15,7 +15,11 @@ n = NetAddr("127.0.0.1", 57140);
 // Song - 1
 // Shuoxin - 2
 ~id = 0;
-~userNameList = ["jia","song","shuoxin"];
+~userNameList = [
+	"jia",
+	"song",
+	"shuoxin"
+];
 ~userList = [0, 1, 2];
 
 ~histo = ();
@@ -25,7 +29,6 @@ n = NetAddr("127.0.0.1", 57140);
 	var to = msg[1];
 	var array = ''!3;
 	array[from] = to;
-//	array.postln;
 })[0]};
 
 ~respondChecker = {|n| n==~id};
@@ -74,7 +77,8 @@ SynthDef(\sine, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1|
 
 SynthDef(\braid, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1, freqBus = 0|
 	var detectedFreq, hasFreq;
-	var sig = SinOsc.ar(freq.lag(10));
+	var lagFreq = freq.lag(10);
+	var sig = SinOsc.ar(lagFreq);
 	var env = EnvGen.kr(
 		Env([0, 1, 0], [attack, 10], releaseNode: 1),
 		doneAction: 2,
@@ -150,16 +154,21 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	var configsFnStore = Dictionary.new;
 
 	// ("***Syncing chain config for user: " ++ ~userNameList[~id]).postln;
-	configs.postln;
 	configs.collect({|chain|
 		var chainStore = Dictionary.new;
 		chain.keysValuesDo({|key, value|
-			// var valueString = value.postString;
-			// valueString = valueString.removing(valueString.first);
-			// valueString = valueString.removing(valueString.last);
-			chainStore.put(key, value.postString);
+			var valueString = value.postString;
+
+			// If the value is function, remove the {}
+			// {rrand(3)}=> {}
+			if(value.isFunction, {
+				valueString = valueString.asArray[
+					(1..valueString.size - 2)
+				].join.asString.stripWhiteSpace;
+			});
+
+			chainStore.put(key, valueString);
 		});
-		chainStore.postln;
 
 		configsFnStore.put(chainStore.at(\name).asSymbol, chainStore);
 	});
@@ -167,13 +176,13 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	configsFnStore;
 };
 
+
 OSCdef(\syncConfigs, {|msg|
 	var userId = msg[1];
 	var config = msg[2].asString.interpret;
 
 	~userChainVisualConfigs[userId] = config;
 }, \syncConfigs);
-
 
 ~syncChainConfigs = {
 	n.sendMsg(
@@ -206,7 +215,7 @@ OSCdef(\syncConfigs, {|msg|
 ),  (
 	// Faster queue
 	name: \fast,
-	waitTime: {0.3},
+	waitTime: {0.5},
 	nextTarget: {[0, 1, 2].choose}
 ), (
 	// Build up queue
@@ -307,7 +316,7 @@ n.sendMsg('/buildUp', 0, ~id, 0);
 // Send braid change
 // positive number means add freq to the oscillator
 // negative means minus
-n.sendMsg('/braid', ~id, 10);
+n.sendMsg('/braid', ~id, 1);
 )
 //////////////////////////////////////////chat
 
