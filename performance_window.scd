@@ -112,47 +112,45 @@ r = {
 }.fork;
 
 Routine {
-	inf.do{|j|
-		~braidBus.get({ |v|
-			{
-				if((w.isClosed.not)&&(~braidisInitialized)) {
-					w.drawFunc = {
-						Pen.use {
-							Pen.width = 1;
-							Pen.color = Color.white;
+	while { runBraid } {
+			var v = ~braidBus.getnSynchronous(3);
 
-							pathBraid = pathBraid ++ [v];
-							pathBraid = pathBraid.keep(-1*(width-(2*indentBraid)).asInt);
-							3.do {|i|
-								Pen.beginPath;
-								pathBraid.collect({|p, q|
-									Pen.moveTo(
-										Point(
-											indentBraid + (q*movingSpeed),
-											pathBraid[q][i].linlin(50, 1700, 0.9*height, 0.07*height)
-										)
-									);
-									Pen.lineTo(
-										Point(
-											indentBraid*1.025 + (q*movingSpeed),
-											pathBraid[q][i].linlin(50, 1700, 0.9*height, 0.07*height)
-										)
-									);
-									Pen.stroke;
-								})
-							};
+			if((w.isClosed.not)&&(~braidisInitialized)) {
+				w.drawFunc = {
+					Pen.use {
+						Pen.width = 1;
+						Pen.color = Color.white;
+
+						pathBraid = pathBraid ++ [v];
+						pathBraid = pathBraid.keep(-1*(width-(2*indentBraid)).asInt);
+						3.do {|i|
+							Pen.beginPath;
+							pathBraid.collect({|p, q|
+								Pen.moveTo(
+									Point(
+										indentBraid + (q*movingSpeed),
+										pathBraid[q][i].linlin(50, 1700, 0.9*height, 0.07*height)
+									)
+								);
+								Pen.lineTo(
+									Point(
+										indentBraid*1.025 + (q*movingSpeed),
+										pathBraid[q][i].linlin(50, 1700, 0.9*height, 0.07*height)
+									)
+								);
+								Pen.stroke;
+							})
 						};
 					};
-				}
-			}.defer
-		});
-		0.08.wait;
-		{ while { runBraid } { w.refresh; 0.08.wait } }.fork(AppClock);
+				};
+			};
+			w.refresh;
+		(1/20).wait;
 	}
-}.play;
+}.play(AppClock);
 
-CmdPeriod.doOnce({ w.close });
-w.onClose_({ r.stop; runBraid = false;});
+	CmdPeriod.doOnce({ w.close });
+	w.onClose_({ r.stop; runBraid = false;});
 )
 
 w.close//just in case

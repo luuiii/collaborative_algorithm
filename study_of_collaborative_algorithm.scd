@@ -154,11 +154,10 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	configs.collect({|chain|
 		var chainStore = Dictionary.new;
 		chain.keysValuesDo({|key, value|
-			var valueString = value.postString;
-			valueString = valueString.removing(valueString.first);
-			valueString = valueString.removing(valueString.last);
-
-			chainStore.put(key, valueString);
+			// var valueString = value.postString;
+			// valueString = valueString.removing(valueString.first);
+			// valueString = valueString.removing(valueString.last);
+			chainStore.put(key, value.postString);
 		});
 		chainStore.postln;
 
