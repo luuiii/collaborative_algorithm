@@ -11,12 +11,12 @@
 // nextTarget: {0}
 (
 ~configs = [(
-	// Slower queue with longer wait time
+	// Slower queue, noise sound
 	name: \slow,
 	waitTime: {1},
 	nextTarget: {[0, 1, 2].choose}
 ),  (
-	// Faster queue
+	// Faster queue, sine sound
 	name: \fast,
 	waitTime: {0.5},
 	nextTarget: {[0, 1, 2].choose}
