@@ -105,20 +105,48 @@ SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
 	Out.ar(0,sig)
 }).add;
 
-~play_message = {|queueName, from, to, waitTime|
-	if (queueName == \buildUp, {
-		~checkPartial.value();
-		~addPartial.value();
-	}, {
-		var freqs = [400, 800, 1200];
-		var pans = [-1, 0, 1];
+SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
+	var in = GrayNoise.ar(1);
+	var sig = BPF.ar(in, freq, rq);
+	var env = EnvGen.kr(
+		Env([0, 1, 1, 0], [0.001, 1, 0.001]),
+		timeScale: dur,
+		doneAction: 2,
+	);
+	sig = Pan2.ar(
+		sig*env,
+		pan,
+		amp
+	);
+	Out.ar(out, sig);
+}).add;
 
-		Synth(\gai_id, [
-			\freq, freqs[to] * waitTime.value().linexp(0, 20, 0.3, 5),
-			\pan, pans[from],
-			\dur: waitTime.value() * 0.5,
-		])
-	});
+~play_message = {|queueName, from, to, waitTime|
+	var panMap = [-1, 0, 1];
+	switch(queueName,
+		\buildUp, {
+			~checkPartial.value();
+			~addPartial.value();
+		},
+		\slow, {
+			Synth(\noise, [
+				\amp, 0.1,
+				\freq, to.linlin(0, 2, 500, 2000),
+				\rq, 0.5,
+				\pan, panMap[from],
+				\dur, waitTime.value() * 0.35,
+			]);
+		}, {
+			var freqs = [400, 800, 1200];
+			// var pans = [-1, 0, 1];
+
+			Synth(\gai_id, [
+				\freq, freqs[to] * waitTime.value().linexp(0, 20, 0.3, 5),
+				\pan, panMap[from],
+				\dur: waitTime.value() * 0.5,
+			]);
+		}
+	);
 };
 
 // Braid configs
@@ -244,117 +272,47 @@ OSCdef(\syncConfigs, {|msg|
 		~id,
 		~getUserConfigsValue.(~configs).asCompileString
 	)
-}
-)
+};
 
-////////////////////////////////////universal_implementation
-////////////////////////////////////receive
-(
-// Configs for the message queue
-// To Performers:
-// You need to change this configs value and then evaluate the entire
-// block
+~updateOSCDefs = {|configs|
+	configs.collect({|config, index|
+		OSCdef(config.name.asSymbol, {|msg|
+			var from = msg[2];
+			var receiver = msg[1];
+			var lastWaitTime = msg[3];
+			var toRespond = ~respondChecker.(receiver);
 
-// Tips for changing the configs for different chains:
-// ### Weight choose
-// waitTime: {[rrand(0.04,  0.05), rrand(0.4, 4)].wchoose([0.8, 0.2])},
-// nextTarget: {~userList.reject(_==~id).wchoose([0.1, 0.9])}
-// ### Fixed target, alwasy send to this
-// nextTarget: {0}
-~configs = [(
-	// Slower queue with longer wait time
-	name: \slow,
-	waitTime: {3},
-	nextTarget: {[0, 1, 2].choose}
-),  (
-	// Faster queue
-	name: \fast,
-	waitTime: {0.5},
-	nextTarget: {[0, 1, 2].choose}
-), (
-	// Build up queue
-	name: \buildUp,
-	waitTime: {10},
-	nextTarget: {[0, 1, 2].choose}
-)
-];
+			~histo[config.name] = (~histo[config.name]?[]).insert(0, [from, receiver]);
+			(config.name.asString++":"++~histogram.value(config.name)).postln;
+			~play_message.(config.name.asSymbol, from, receiver, lastWaitTime);
 
-// We need to sync chain configs for visual display
-~syncChainConfigs.value();
-
-~configs.collect({|config, index|
-	OSCdef(config.name.asSymbol, {|msg|
-		var from = msg[2];
-		var receiver = msg[1];
-		var lastWaitTime = msg[3];
-		var toRespond = ~respondChecker.(receiver);
-
-		~histo[config.name] = (~histo[config.name]?[]).insert(0, [from, receiver]);
-		(config.name.asString++":"++~histogram.value(config.name)).postln;
-		~play_message.(config.name.asSymbol, from, receiver, lastWaitTime);
-
-		if(toRespond,
-			{
+			if(toRespond,
 				{
-					var nextTarget = config.nextTarget.value();
-					var waitTime = config.waitTime.value();
+					{
+						var nextTarget = config.nextTarget.value();
+						var waitTime = config.waitTime.value();
 
-					("***********").postln;
-					("**" ++ config.name ++ "**:").postln;
-					("Next target is " ++ nextTarget).postln;
-					("Getting wait time " ++ waitTime).postln;
-					("***********").postln;
-					waitTime.wait;
+						("***********").postln;
+						("**" ++ config.name ++ "**:").postln;
+						("Next target is " ++ nextTarget).postln;
+						("Getting wait time " ++ waitTime).postln;
+						("***********").postln;
+						waitTime.wait;
 
 
-					if (nextTarget.isNil, {
-						(config.name +" sending nil, stopped").postln;
-					}, {
-						(receiver +" sending next message to " ++ nextTarget.asString).postln;
-						n.sendMsg(config.name, nextTarget, ~id, waitTime);
-					});
-			}.fork;},{
-				//else?
-		});
-	}, config.name.asSymbol).postln;
-});
+						if (nextTarget.isNil, {
+							(config.name +" sending nil, stopped").postln;
+						}, {
+							(receiver +" sending next message to " ++ nextTarget.asString).postln;
+							n.sendMsg(config.name, nextTarget, ~id, waitTime);
+						});
+				}.fork;},{
+					//else?
+			});
+		}, config.name.asSymbol).postln;
+	});
+	"OSCDefs updated";
+};
+
+"Initialized the piece!";
 )
-
-// **** Trigger the piece
-(
-// Send message to slow
-var to = ~userList.reject(_==~id).choose;
-to.postln;
-n.sendMsg('/slow', 0, ~id, 0);
-)
-
-(
-// Send message to fast
-var to = ~userList.reject(_==~id).choose;
-to.postln;
-n.sendMsg('/fast', 0, ~id, 0);
-)
-
-(
-// Start the buildUp queue
-var to = ~userList.reject(_==~id).choose;
-to.postln;
-n.sendMsg('/buildUp', 0, ~id, 0);
-)
-
-(
-// Send braid change
-// positive number means add freq to the oscillator
-// negative means minus
-n.sendMsg('/braid', ~id, 1);
-)
-
-// Kill braid!
-n.sendMsg('/braid_kill');
-
-// Update braid max diff! (in frequency)
-n.sendMsg('/braid_update_maxdiff', 200);
-
-//////////////////////////////////////////chat
-
-n.sendMsg('/chat', ~id, "Hello")
