@@ -154,7 +154,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 };
 
 // Braid configs
-~freqList = [404, 400, 396];
+~freqList = [419, 419, 419];
 ~maxDiff = 100;
 ~braidBus = Bus.new(\control, 0, ~userList.size);
 
