@@ -9,6 +9,7 @@
 
 //to-do: maybe play a bit with sound
 
+
 (
 n = NetAddr("127.0.0.1", 57140);
 // The performer's ID
@@ -130,12 +131,14 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 			~addPartial.value();
 		},
 		\slow, {
+			var freqs = [300, 700, 2300];
+
 			Synth(\noise, [
-				\amp, 0.1,
-				\freq, to.linlin(0, 2, 500, 2000),
+				\amp, 0.2,
+				\freq, freqs[to],
 				\rq, 0.5,
 				\pan, panMap[from],
-				\dur, waitTime.value() * 0.35,
+				\dur, waitTime.value() * 0.4,
 			]);
 		}, {
 			var freqs = [400, 800, 1200];
@@ -284,7 +287,7 @@ OSCdef(\syncConfigs, {|msg|
 			var toRespond = ~respondChecker.(receiver);
 
 			~histo[config.name] = (~histo[config.name]?[]).insert(0, [from, receiver]);
-			(config.name.asString++":"++~histogram.value(config.name)).postln;
+			// (config.name.asString++":"++~histogram.value(config.name)).postln;
 			~play_message.(config.name.asSymbol, from, receiver, lastWaitTime);
 
 			if(toRespond,
