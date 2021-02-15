@@ -243,7 +243,7 @@ OSCdef(\chat, {|msg|
 	configs.collect({|chain|
 		var chainStore = Dictionary.new;
 		chain.keysValuesDo({|key, value|
-			var valueString = value.postString;
+			var valueString = value.asCompileString;
 
 			// If the value is function, remove the {}
 			// {rrand(3)}=> {}
@@ -253,6 +253,13 @@ OSCdef(\chat, {|msg|
 				].join.asString.stripWhiteSpace;
 			});
 
+			// If it's a symbol, we use postString
+			if(value.class == Symbol, {
+				valueString = value.postString;
+			});
+
+			// everything else, like Pattern
+			// we just use the compile string
 			chainStore.put(key, valueString);
 		});
 
@@ -280,6 +287,11 @@ OSCdef(\syncConfigs, {|msg|
 
 ~updateOSCDefs = {|configs|
 	configs.collect({|config, index|
+		// Use asStream to evaluate the Pattern as as Routine
+		// Function will stay the same
+		var waitTimeFn = config.waitTime.asStream;
+		var nextTargetFn = config.nextTarget.asStream;
+
 		OSCdef(config.name.asSymbol, {|msg|
 			var from = msg[2];
 			var receiver = msg[1];
@@ -293,8 +305,8 @@ OSCdef(\syncConfigs, {|msg|
 			if(toRespond,
 				{
 					{
-						var nextTarget = config.nextTarget.value();
-						var waitTime = config.waitTime.value();
+						var nextTarget = nextTargetFn.value();
+						var waitTime = waitTimeFn.value();
 
 						("***********").postln;
 						("**" ++ config.name ++ "**:").postln;

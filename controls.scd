@@ -9,6 +9,7 @@
 // nextTarget: {~userList.reject(_==~id).wchoose([0.1, 0.9])}
 // ### Fixed target, alwasy send to this
 // nextTarget: {0}
+
 (
 ~configs = [(
 	// Slower queue, noise sound
