@@ -1,3 +1,10 @@
+(
+// Run this block to setup the enviroment;
+var dir = thisProcess.nowExecutingPath.dirname;
+(dir +/+ "study_of_collaborative_algorithm.scd").load;
+(dir +/+ "performance_window.scd").load;
+)
+
 // Configs for the message queue
 // To Performers:
 // You need to change this configs value and then evaluate the entire
@@ -9,6 +16,7 @@
 // nextTarget: {~userList.reject(_==~id).wchoose([0.1, 0.9])}
 // ### Fixed target, alwasy send to this
 // nextTarget: {0}
+
 (
 ~configs = [(
 	// Slower queue, noise sound
