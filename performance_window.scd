@@ -130,7 +130,8 @@ Routine {
 	w.onClose_({ r.stop; runBraid = false;});
 )
 
-w.close//just in case
+//just in case
+// w.close
 
 
 
@@ -138,5 +139,4 @@ w.close//just in case
 // 	((i == 0)||(i == 1)||(i == 2)).if({i = ~partialCount});
 // 	i = i.asString++(" "!88).join;
 // }).join})
-~userChainVisualConfigs
-~histogram.(\fast)[2]
+// ~userChainVisualConfigs
