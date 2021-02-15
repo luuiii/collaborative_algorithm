@@ -4,11 +4,14 @@
 // block
 
 // Tips for changing the configs for different chains:
-// ### Weight choose
+// *** Weight choose
 // waitTime: {[rrand(0.04,  0.05), rrand(0.4, 4)].wchoose([0.8, 0.2])},
 // nextTarget: {~userList.reject(_==~id).wchoose([0.1, 0.9])}
-// ### Fixed target, alwasy send to this
+// *** Fixed target, alwasy send to this
 // nextTarget: {0}
+// *** You can use pattern class in SC as well, you don't need {}
+//     remember to always put "inf" in the repeats
+// waitTime: Pseq([0.1, 0.2, 0.3], inf)
 (
 ~configs = [(
 	// Slower queue, noise sound
