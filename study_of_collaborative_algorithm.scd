@@ -289,8 +289,8 @@ OSCdef(\syncConfigs, {|msg|
 	configs.collect({|config, index|
 		// Use asStream to evaluate the Pattern as as Routine
 		// Function will stay the same
-		var waitTimeFn = config.waitTime.asStream;
-		var nextTargetFn = config.nextTarget.asStream;
+		var waitTimeFn = config['waitTime'].asStream;
+		var nextTargetFn = config['nextTarget'].asStream;
 
 		OSCdef(config.name.asSymbol, {|msg|
 			var from = msg[2];
