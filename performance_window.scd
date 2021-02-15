@@ -3,13 +3,14 @@ var scale = 1; //1.5 for full HD
 var width = 1280 * scale;
 var height = 720 * scale;
 
-var indent_lmr = 0.35;
+var indent_lmr = 0.25;
+var box_width = 0.21 * width;
 var left = width * (0.5 - indent_lmr);
 var mid = width * 0.5;
 var right = width * (0.5 + indent_lmr);
 
-var line_space = 0.17 * height;
-var algo_space = 0.04 * height;
+var line_space = 0.2 * height;
+var algo_space = 0.07 * height;
 
 var line = [];
 var waitTime_array = [];
@@ -58,13 +59,13 @@ var show = {|items|
 w = Window.new(name:"[ _  _  _ ]", bounds:Rect(0, 0, width, height));
 w.view.background = Color.black;
 
-line = Array.fill(9,{|i| StaticText.new(w, Rect([left, mid, right][i%3], posY + ((i/3).floor*line_space), width, height)).font_(Font("sansSerif",[32,20,20][(i/3).floor.asInt] * scale)).stringColor_([Color.white,Color.white,Color.red][(i/3).floor.asInt]);});
+line = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.75*box_width), posY + ((i/3).floor*line_space), box_width, height)).font_(Font("Helvetica Neue",4.5*[32,32,32][(i/3).floor.asInt] * scale,0.5.coin,0.5.coin)).stringColor_([Color.white,Color.white,Color.red][(i/3).floor.asInt]).align_(\center);});
 
-waitTime_array = Array.fill(9,{|i| StaticText.new(w, Rect([left, mid, right][i%3], posY + algo_space + ((i/3).floor*line_space), width, height)).font_(Font("sansSerif",10 * scale)).align_(\left)});
+waitTime_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + algo_space + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",20 * scale)).align_(\center)});
 
-target_array = Array.fill(9,{|i| StaticText.new(w, Rect([left, mid, right][i%3], posY + (2 * algo_space) + ((i/3).floor*line_space), width, height)).font_(Font("sansSerif",10 * scale)).align_(\left)});
+target_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + (2 * algo_space) + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",20 * scale)).align_(\center)});
 
-chat_array = Array.fill(5,{|i| StaticText.new(w, Rect(chat_indent, chat_posY + (i * chat_linespace), width, height)).font_(Font("courier", 12 * scale))};
+chat_array = Array.fill(5,{|i| StaticText.new(w, Rect(chat_indent, chat_posY + (i * chat_linespace), width, height)).font_(Font("courier", 15 * scale))};
 );
 
 w.front;
