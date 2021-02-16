@@ -32,7 +32,7 @@ var movingSpeed = 1 * scale;
 var drawWidth = 0.1;
 
 // Get the display value for the chain and a key
-// for example: getValuesForKey.(\slow, \waitTime)
+// for example: getValuesForKey.(\noise, \waitTime)
 //  -> ["{1}", "", "{rrand(0.2, 0.5}"]
 var getValuesForKey = {|chain, key, user|
 	(user..user).collect({|index|
@@ -73,10 +73,10 @@ r = {
 				item.string_(show.(([0,1,2].includes((~histogram.(\buildUp)?"")[index%3])).if({~partialCount},{""})));
 			};
 			waitTime_array.do{|item, index| item.string_(
-				getValuesForKey.([\fast, \slow, \buildUp][(index/3).floor.asInt], \waitTime, index%3).join).stringColor_(Color.gray)};
+				getValuesForKey.([\sine, \noise, \buildUp][(index/3).floor.asInt], \waitTime, index%3).join).stringColor_(Color.gray)};
 
 			target_array.do{|item, index| item.string_(
-				getValuesForKey.([\fast, \slow, \buildUp][(index/3).floor.asInt], \nextTarget, index%3).join).stringColor_(Color.gray)};
+				getValuesForKey.([\sine, \noise, \buildUp][(index/3).floor.asInt], \nextTarget, index%3).join).stringColor_(Color.gray)};
 
 			5.do{|i|
 				chat_array[i].string_(~chat.reverse[4-i]?"").stringColor_(Color.white);

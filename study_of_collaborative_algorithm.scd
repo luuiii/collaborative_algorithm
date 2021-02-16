@@ -128,7 +128,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 			~checkPartial.value();
 			~addPartial.value();
 		},
-		\slow, {
+		\noise, {
 			var freqs = [300, 700, 2300];
 
 			Synth(\noise, [
@@ -231,7 +231,7 @@ OSCdef(\chat, {|msg|
 
 // global var that holds all performer's config value as string(For visual display)
 // userId -> { chainName -> { waitTime -> ...., nextTarget -> ....} }
-// eg. Dictionary[ (0 -> Dictionary[ (fast -> ...), (slow -> ... ]), ...]
+// eg. Dictionary[ (0 -> Dictionary[ (sine -> ...), (noise -> ... ]), ...]
 ~userChainVisualConfigs = Dictionary.new;
 
 ~getUserConfigsValue = {|configs|

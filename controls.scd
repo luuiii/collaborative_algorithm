@@ -14,17 +14,16 @@
 // waitTime: Pseq([0.1, 0.2, 0.3], inf)
 (
 ~configs = [(
-	// Slower queue, noise sound
-	name: \slow,
-	waitTime: Prand([1,5,2,3,4]*0.7,inf),
-	//nextTarget: {[0, 0,0,0,0,0,1, 2].choose}
-	nextTarget: {0}
-),  (
-	// Faster queue, sine sound
-	name: \fast,
-	waitTime: {rrand(4,5.5)*0.8},
-	nextTarget: {0}
+	// sine sound
+	name: \sine,
+	waitTime: {0.5},
+	nextTarget: {[0, 1, 2].choose}
 ), (
+	// noise sound
+	name: \noise,
+	waitTime: {1},
+	nextTarget: {[0, 1, 2].choose}
+),  (
 	// Build up queue
 	name: \buildUp,
 	waitTime: {4.rand},
@@ -61,18 +60,19 @@ n.sendMsg('/braid_update_maxdiff', 200);
 n.sendMsg('/chat', ~id, "a day");
 // **** Kick off the chain
 (
-// start slow chain
+// Start the sine chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/slow', to, ~id, 0.1);
+n.sendMsg('/sine', to, ~id, 0.1);
 )
 
 (
-// Start fast chain
+// start the noise chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/fast', to, ~id, 0.1);
+n.sendMsg('/noise', to, ~id, 0.1);
 )
+
 
 (
 // Start the buildUp queue
