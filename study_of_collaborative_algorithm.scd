@@ -34,10 +34,8 @@ n = NetAddr("127.0.0.1", 57140);
 })[0]};
 
 ~respondChecker = {|n| n==~id};
-
-~partialVolumes = [ 0.14, 0.105, 0.07, 0.07, 0.035, 0.0175, 0.0315, 0.07, 0.028, 0.01, 0.01];
-
-~partialList = [71, 120, 162, 193.1, 311.22, 425.667, 511.11, 939, 1022.1111, 2000, 3133] * Array.series(11,1,0);
+~partialVolumes = Array.rand(11,0.01,0.04);
+~partialList = [500] + Array.series(11, 50, rrand(40,55));
 
 ~partialThreshold = 11;
 ~partialCount = 0;

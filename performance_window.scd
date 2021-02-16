@@ -18,12 +18,12 @@ var target_array = [];
 var chat_array = [];
 
 var indent = 0.03125 * width;
-var chat_indent = 0.4 * width;
+var chat_indent = 0.05 * width;
 
 var posY = -0.375 * height;
 
 var chat_posY = 0.3 * height;
-var chat_linespace = 0.025 * height;
+var chat_linespace = 0.02 * height;
 
 var runBraid = true;//braid
 var indentBraid = 0.015 * width;
@@ -42,12 +42,6 @@ var getValuesForKey = {|chain, key, user|
 	})
 };
 
-var getHistogram = {|item|
-	try { (~histogram.value([\fast, \slow, \buildUp][item]).asString) } { |error|
-		""
-	};
-};
-
 var show = {|items|
 	if(items.isNil,{
 		"";
@@ -56,24 +50,27 @@ var show = {|items|
 	})
 };
 
-w = Window.new(name:"[ _  _  _ ]", bounds:Rect(0, 0, width, height));
+w = Window.new(name:"[ _  _  _ ]", bounds: Rect(0, 0, width, height), border:true);
 w.view.background = Color.black;
 
-line = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.75*box_width), posY + ((i/3).floor*line_space), box_width, height)).font_(Font("Helvetica Neue",4.5*[32,32,32][(i/3).floor.asInt] * scale,0.5.coin,0.5.coin)).stringColor_([Color.white,Color.white,Color.red][(i/3).floor.asInt]).align_(\center);});
+line = Array.fill(9,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.75*box_width), 1.07*posY + ((i/3).floor*line_space), box_width, height)).font_(Font("Helvetica Neue",4.5*[32,32,5][(i/3).floor.asInt] * scale,[0,1,0][(i/3).floor.asInt].asBoolean,[0,1,0][(i/3).floor.asInt].asBoolean)).stringColor_([Color.white,Color.white,Color.fromHexString("E93000")][(i/3).floor.asInt]).align_(\center);});
 
-waitTime_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + algo_space + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",20 * scale)).align_(\center)});
+waitTime_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + algo_space + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",17 * scale)).align_(\center)});
 
-target_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + (2 * algo_space) + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",20 * scale)).align_(\center)});
+target_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + (2 * algo_space) + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",17 * scale)).align_(\center)});
 
-chat_array = Array.fill(5,{|i| StaticText.new(w, Rect(chat_indent, chat_posY + (i * chat_linespace), width, height)).font_(Font("courier", 15 * scale))};
+chat_array = Array.fill(5,{|i| StaticText.new(w, Rect(chat_indent, chat_posY + (i * chat_linespace), width, height)).font_(Font("menlo", 13 * scale))};
 );
 
 w.front;
 r = {
 	inf.do { |i|
 		{
-			line.do{|item, index|
+			line[..5].do{|item, index|
 				item.string_(show.((~histogram.([\fast, \slow, \buildUp][index/3.floor.asInt])?"")[index%3]));
+			};
+			line[6..8].do{|item, index|
+				item.string_(show.(([0,1,2].includes((~histogram.(\buildUp)?"")[index%3])).if({~partialCount},{""})));
 			};
 			waitTime_array.do{|item, index| item.string_(
 				getValuesForKey.([\fast, \slow, \buildUp][(index/3).floor.asInt], \waitTime, index%3).join).stringColor_(Color.gray)};

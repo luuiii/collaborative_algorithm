@@ -16,18 +16,19 @@
 ~configs = [(
 	// Slower queue, noise sound
 	name: \slow,
-	waitTime: {1},
-	nextTarget: {[0, 1, 2].choose}
+	waitTime: Prand([1,5,2,3,4]*0.7,inf),
+	//nextTarget: {[0, 0,0,0,0,0,1, 2].choose}
+	nextTarget: {0}
 ),  (
 	// Faster queue, sine sound
 	name: \fast,
-	waitTime: {0.5},
-	nextTarget: {[0, 1, 2].choose}
+	waitTime: {rrand(4,5.5)*0.8},
+	nextTarget: {0}
 ), (
 	// Build up queue
 	name: \buildUp,
-	waitTime: {10},
-	nextTarget: {[0, 1, 2].choose}
+	waitTime: {4.rand},
+	nextTarget: {0}
 )
 ];
 
@@ -37,13 +38,16 @@
 ~updateOSCDefs.value(~configs);
 )
 
+~partialVolumes = Array.rand(11,0.01,0.04);
+~partialList = [500] + Array.series(11, 50, rrand(40,55)) /*Array.geom(11,1,(2**(1/8)))*/;
+~partialThreshold = 11;
 
 // *** Braids Section
 (
 // Send braid change
 // positive number means add freq to the oscillator
 // negative means minus
-n.sendMsg('/braid', ~id, 1);
+n.sendMsg('/braid',0,-10);
 )
 
 // Kill braid!
@@ -53,9 +57,8 @@ n.sendMsg('/braid_kill');
 n.sendMsg('/braid_update_maxdiff', 200);
 
 //////////////////////////////////////////chat
-n.sendMsg('/chat', ~id, "Hello")
 
-
+n.sendMsg('/chat', ~id, "a day");
 // **** Kick off the chain
 (
 // start slow chain
@@ -68,7 +71,7 @@ n.sendMsg('/slow', to, ~id, 0.1);
 // Start fast chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/fast', 0, ~id, 0.1);
+n.sendMsg('/fast', to, ~id, 0.1);
 )
 
 (
