@@ -34,11 +34,23 @@ n = NetAddr("127.0.0.1", 57140);
 })[0]};
 
 ~respondChecker = {|n| n==~id};
-~partialVolumes = Array.rand(11,0.01,0.04);
-~partialList = [500] + Array.series(11, 50, rrand(40,55));
+
+// Build up chain settings
 
 ~partialThreshold = 11;
 ~partialCount = 0;
+~partialStepMultiplier = 1;
+~partialAmpMultiplier = 1;
+
+~genPartialConfig = {
+	~partialVolumes = Array.rand(~partialThreshold, 0.01, 0.04) * ~partialAmpMultiplier;
+	~partialList = [500] + Array.series(
+		~partialThreshold, 50, rrand(40, 55) * ~partialStepMultiplier
+	);
+};
+
+// Init the volumes and list for partial
+~genPartialConfig.value();
 
 ~sineGroup = Group.new(addAction: \addToTail);
 
@@ -61,6 +73,54 @@ n = NetAddr("127.0.0.1", 57140);
 		~partialCount = 0;
 	});
 };
+
+~updatePartialStepMultiplier = { |val|
+	if(val.isNumber && val > 0, {
+		("***Update partial step multiplier to :" ++ val).postln;
+		~partialStepMultiplier = val;
+		~genPartialConfig.value();
+	}, {
+		("***!!Invalid partial step multiplier :" ++ val).postln;
+	});
+};
+
+~updatePartialAmpMultiplier = { |val|
+	if(val.isNumber && val > 0, {
+		("***Update partial amp multiplier to :" ++ val).postln;
+		~partialAmpMultiplier = val;
+		~genPartialConfig.value();
+	}, {
+		("***!!Invalid partial amp multiplier :" ++ val).postln;
+	});
+};
+
+~updatePartialThreshold = { |val|
+	if(val.isNumber && val > 1, {
+		("***Update partial thresold to to :" ++ val).postln;
+		~partialThreshold = val;
+		~genPartialConfig.value();
+	}, {
+		("***!!Invalid partial thresold :" ++ val).postln;
+	});
+};
+
+
+OSCdef(\build_up_kill, {|msg|
+	~sineGroup.set(\gate, 0);
+	~partialCount = 0;
+}, \build_up_kill);
+
+OSCdef(\build_up_partial_threshold, {|msg|
+	~updatePartialThreshold.(msg[1]);
+}, \build_up_partial_threshold);
+
+OSCdef(\build_up_partial_amp_multiplier, {|msg|
+	~updatePartialAmpMultiplier.(msg[1]);
+}, \build_up_partial_amp_multiplier);
+
+OSCdef(\build_up_partial_step_multiplier, {|msg|
+	~updatePartialStepMultiplier.(msg[1]);
+}, \build_up_partial_step_multiplier);
 
 SynthDef(\sine, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1|
 	var sig = SinOsc.ar(freq + LFNoise2.kr(1, 0));

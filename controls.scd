@@ -26,7 +26,7 @@
 ),  (
 	// Build up queue
 	name: \buildUp,
-	waitTime: {4.rand},
+	waitTime: {10.rand},
 	nextTarget: {0}
 )
 ];
@@ -55,6 +55,20 @@ n.sendMsg('/braid_kill');
 // Update braid max diff! (in frequency)
 n.sendMsg('/braid_update_maxdiff', 200);
 
+// ***** Build up
+
+// Kill build up chain(but remember, if there's build up message still trasnfer, it will kick of itself again.)
+n.sendMsg('/\build_up_kill');
+
+// Setting partial coount threshold (eg, how many partials)
+n.sendMsg('/build_up_partial_threshold', 10);
+
+// Setting the step multiplier(how big each partial grow)
+n.sendMsg('/\build_up_partial_step_multiplier', 13);
+
+// Setting the amp multiplier(how big each partial's amp)
+n.sendMsg('/\build_up_partial_amp_multiplier', 1);
+
 //////////////////////////////////////////chat
 
 n.sendMsg('/chat', ~id, "a day");
@@ -78,5 +92,5 @@ n.sendMsg('/noise', to, ~id, 0.1);
 // Start the buildUp queue
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/buildUp', to, ~id, 0.1);
+n.sendMsg('/buildUp', 0, ~id, 0.1);
 )
