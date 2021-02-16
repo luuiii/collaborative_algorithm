@@ -67,7 +67,7 @@ r = {
 	inf.do { |i|
 		{
 			line[..5].do{|item, index|
-				item.string_(show.((~histogram.([\fast, \slow, \buildUp][index/3.floor.asInt])?"")[index%3]));
+				item.string_(show.((~histogram.([\sine, \noise, \buildUp][index/3.floor.asInt])?"")[index%3]));
 			};
 			line[6..8].do{|item, index|
 				item.string_(show.(([0,1,2].includes((~histogram.(\buildUp)?"")[index%3])).if({~partialCount},{""})));

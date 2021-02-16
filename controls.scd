@@ -37,16 +37,13 @@
 ~updateOSCDefs.value(~configs);
 )
 
-~partialVolumes = Array.rand(11,0.01,0.04);
-~partialList = [500] + Array.series(11, 50, rrand(40,55)) /*Array.geom(11,1,(2**(1/8)))*/;
-~partialThreshold = 11;
 
 // *** Braids Section
 (
 // Send braid change
 // positive number means add freq to the oscillator
 // negative means minus
-n.sendMsg('/braid',0,-10);
+n.sendMsg('/braid', ~id, 1);
 )
 
 // Kill braid!
@@ -71,7 +68,8 @@ n.sendMsg('/\build_up_partial_amp_multiplier', 1);
 
 //////////////////////////////////////////chat
 
-n.sendMsg('/chat', ~id, "a day");
+n.sendMsg('/chat', ~id, "hello world");
+
 // **** Kick off the chain
 (
 // Start the sine chain
