@@ -199,11 +199,11 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 				\dur, waitTime.value() * 0.4,
 			]);
 		}, {
-			var freqs = [400, 800, 1200];
+			var freqs = [400, 600, 900];
 			// var pans = [-1, 0, 1];
 
 			Synth(\gai_id, [
-				\freq, freqs[to] * waitTime.value().linexp(0, 20, 0.3, 5),
+				\freq, freqs[to] * waitTime.value().linexp(0, 19, 8, 0.00000001),
 				\pan, panMap[from],
 				\dur: waitTime.value() * 0.5,
 			]);
