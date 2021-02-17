@@ -79,7 +79,7 @@ r = {
 				getValuesForKey.([\sine, \noise, \buildUp][(index/3).floor.asInt], \nextTarget, index%3).join).stringColor_(Color.gray)};
 
 			5.do{|i|
-				chat_array[i].string_(~chat.reverse[4-i]?"").stringColor_(Color.white);
+				chat_array[i].string_((~chat?[]).reverse[4-i]?"").stringColor_(Color.white);
 			};
 		}.defer;
 		0.15.wait;
