@@ -16,18 +16,18 @@
 ~configs = [(
 	// sine sound
 	name: \sine,
-	waitTime: {0.5},
+	waitTime: {1.exp},
 	nextTarget: {[0, 1, 2].choose}
 ), (
 	// noise sound
 	name: \noise,
-	waitTime: {1},
+	waitTime: {1.exp},
 	nextTarget: {[0, 1, 2].choose}
 ),  (
 	// Build up queue
 	name: \buildUp,
 	waitTime: {10.rand},
-	nextTarget: {0}
+	nextTarget: {[0, 1, 2].choose}
 )
 ];
 
