@@ -366,11 +366,12 @@ OSCdef(\syncConfigs, {|msg|
 						var nextTarget = nextTargetFn.value();
 						var waitTime = waitTimeFn.value();
 
-						("***********").postln;
-						("**" ++ config.name ++ "**:").postln;
-						("Next target is " ++ nextTarget).postln;
-						("Getting wait time " ++ waitTime).postln;
-						("***********").postln;
+						// Debug logging
+						// ("***********").postln;
+						// ("**" ++ config.name ++ "**:").postln;
+						// ("Next target is " ++ nextTarget).postln;
+						// ("Getting wait time " ++ waitTime).postln;
+						// ("***********").postln;
 						waitTime.wait;
 
 
