@@ -16,11 +16,12 @@ n = NetAddr("127.0.0.1", 57140);
 // Jia - 0
 // Song - 1
 // Shuoxin - 2
-~id = 0;
+~id = 3;
 ~userNameList = [
 	"jia",
 	"song",
-	"shuoxin"
+	"shuoxin",
+	"edward",
 ];
 ~userList = [0, 1, 2];
 

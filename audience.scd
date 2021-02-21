@@ -17,3 +17,9 @@ var dir = thisProcess.nowExecutingPath.dirname;
 )
 ])
 )
+
+
+(
+// To Edward, this is the place to type your Q&A
+n.sendMsg('/chat', ~id, "Type your question here");
+)
