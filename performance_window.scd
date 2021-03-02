@@ -16,7 +16,7 @@ var algo_space = 0.07 * height;
 var line = [];
 var waitTime_array = [];
 var target_array = [];
-var chat_array = [];
+// var chat_array = [];
 
 var indent = 0.03125 * width;
 var chat_indent = 0.05 * width;
@@ -24,13 +24,18 @@ var chat_indent = 0.05 * width;
 var posY = - 0.375 * height;
 
 var chat_posY = 0.1 * height;
-var chat_linespace = 0.046 * height;
+var chat_linespace = 0.03 * height;
+// How big the chat window is
+var chatSectionWidth = 0.618*width;
+var chatSentenceSpace =  0.2 * height;
 
-var runBraid = true;//braid
+var runBraid = true; //braid
 var indentBraid = 0.015 * width;
 var pathBraid = [];
 var movingSpeed = 1 * scale;
 var drawWidth = 0.1;
+var chatTextField;
+var chatSentencesCount = 8;
 
 // Get the display value for the chain and a key
 // for example: getValuesForKey.(\noise, \waitTime)
@@ -60,8 +65,10 @@ waitTime_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3
 
 target_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + (2 * algo_space) + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",17 * scale)).align_(\center)});
 
-chat_array = Array.fill(5,{|i| StaticText.new(w, Rect(chat_indent, chat_posY + (i * chat_linespace), 0.618*width, height)).font_(Font("menlo", 16 * scale))};
-);
+chatTextField = StaticText.new(
+	w, Rect(chat_indent, chat_posY, chatSectionWidth, height)
+).font_(Font("menlo", 16 * scale)).stringColor_(Color.gray);
+
 
 w.front;
 r = {
@@ -79,9 +86,12 @@ r = {
 			target_array.do{|item, index| item.string_(
 				getValuesForKey.([\sine, \noise, \buildUp][(index/3).floor.asInteger], \nextTarget, index%3).join).stringColor_(Color.gray)};
 
-			5.do{|i|
-				chat_array[i].string_((~chat?[]).reverse[4-i]?"").stringColor_(Color.white);
-			};
+			// join the line break with the first "chatSentencesCount" count of chat
+
+			chatTextField.string_((~chat?[])[
+				(~chat.size -chatSentencesCount - 1)..(~chat.size - 1)
+			].join("\n"));
+
 		}.defer;
 		0.15.wait;
 	}
@@ -89,44 +99,44 @@ r = {
 
 Routine {
 	while { runBraid } {
-			var v = ~braidBus.getnSynchronous(3);
+		var v = ~braidBus.getnSynchronous(3);
 
-			if((w.isClosed.not)&&(~braidisInitialized)) {
-				w.drawFunc = {
-					Pen.use {
-						Pen.width = 1;
-						Pen.color = Color.white;
+		if((w.isClosed.not)&&(~braidisInitialized)) {
+			w.drawFunc = {
+				Pen.use {
+					Pen.width = 2.5;
+					Pen.color = Color.white;
 
-						pathBraid = pathBraid ++ [v];
-						pathBraid = pathBraid.keep(-1*(width-(2*indentBraid)).asInteger);
-						3.do {|i|
-							Pen.beginPath;
-							pathBraid.collect({|p, q|
-								Pen.moveTo(
-									Point(
-										indentBraid + (q*movingSpeed),
-										pathBraid[q][i].linlin(50, 1700, 0.9*height, 0.07*height)
-									)
-								);
-								Pen.lineTo(
-									Point(
-										indentBraid*1.025 + (q*movingSpeed),
-										pathBraid[q][i].linlin(50, 1700, 0.9*height, 0.07*height)
-									)
-								);
-								Pen.stroke;
-							})
-						};
+					pathBraid = pathBraid ++ [v];
+					pathBraid = pathBraid.keep(-1*(width-(2*indentBraid)).asInteger);
+					3.do {|i|
+						Pen.beginPath;
+						pathBraid.collect({|p, q|
+							Pen.moveTo(
+								Point(
+									indentBraid + (q*movingSpeed),
+									pathBraid[q][i].linlin(50, 1700, 0.9*height, 0.07*height)
+								)
+							);
+							Pen.lineTo(
+								Point(
+									indentBraid*1.025 + (q*movingSpeed),
+									pathBraid[q][i].linlin(50, 1700, 0.9*height, 0.07*height)
+								)
+							);
+							Pen.stroke;
+						})
 					};
 				};
 			};
-			w.refresh;
+		};
+		w.refresh;
 		(1/20).wait;
 	}
 }.play(AppClock);
 
-	CmdPeriod.doOnce({ w.close });
-	w.onClose_({ r.stop; runBraid = false;});
+CmdPeriod.doOnce({ w.close });
+w.onClose_({ r.stop; runBraid = false;});
 )
 
 //just in case
