@@ -4,10 +4,11 @@ var width = 1280 * scale;
 var height = 720 * scale;
 
 var indent_lmr = 0.25;
+var leftshift = 100;
 var box_width = 0.21 * width;
-var left = width * (0.5 - indent_lmr);
-var mid = width * 0.5;
-var right = width * (0.5 + indent_lmr);
+var left = width * (0.5 - indent_lmr) - leftshift;
+var mid = width * 0.5 - leftshift;
+var right = width * (0.5 + indent_lmr) - leftshift;
 
 var line_space = 0.2 * height;
 var algo_space = 0.07 * height;
@@ -20,10 +21,10 @@ var chat_array = [];
 var indent = 0.03125 * width;
 var chat_indent = 0.05 * width;
 
-var posY = -0.375 * height;
+var posY = - 0.375 * height;
 
-var chat_posY = 0.3 * height;
-var chat_linespace = 0.02 * height;
+var chat_posY = 0.1 * height;
+var chat_linespace = 0.046 * height;
 
 var runBraid = true;//braid
 var indentBraid = 0.015 * width;
@@ -50,7 +51,7 @@ var show = {|items|
 	})
 };
 
-w = Window.new(name:"[ _  _  _ ]", bounds: Rect(0, 0, width, height), border:true);
+w = Window.new(name:"[ _  _  _ ]", bounds: Rect(0, 0, width, height), border:false);
 w.view.background = Color.black;
 
 line = Array.fill(9,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.75*box_width), 1.07*posY + ((i/3).floor*line_space), box_width, height)).font_(Font("Helvetica Neue",4.5*[32,32,5][(i/3).floor.asInteger] * scale,[0,1,0][(i/3).floor.asInteger].asBoolean,[0,1,0][(i/3).floor.asInteger].asBoolean)).stringColor_([Color.white,Color.white,Color.fromHexString("E93000")][(i/3).floor.asInteger]).align_(\center);});
@@ -59,7 +60,7 @@ waitTime_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3
 
 target_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + (2 * algo_space) + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",17 * scale)).align_(\center)});
 
-chat_array = Array.fill(5,{|i| StaticText.new(w, Rect(chat_indent, chat_posY + (i * chat_linespace), width, height)).font_(Font("menlo", 13 * scale))};
+chat_array = Array.fill(5,{|i| StaticText.new(w, Rect(chat_indent, chat_posY + (i * chat_linespace), 0.618*width, height)).font_(Font("menlo", 16 * scale))};
 );
 
 w.front;
@@ -129,7 +130,7 @@ Routine {
 )
 
 //just in case
-// w.close
+w.close
 
 
 
