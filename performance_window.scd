@@ -56,7 +56,7 @@ var show = {|items|
 	})
 };
 
-w = Window.new(name:"[ _  _  _ ]", bounds: Rect(0, 0, width, height), border:false);
+w = Window.new(name:"[ _  _  _ ]", bounds: Rect(0, 0, width, height), border:true);
 w.view.background = Color.black;
 
 line = Array.fill(9,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.75*box_width), 1.07*posY + ((i/3).floor*line_space), box_width, height)).font_(Font("Helvetica Neue",4.5*[32,32,5][(i/3).floor.asInteger] * scale,[0,1,0][(i/3).floor.asInteger].asBoolean,[0,1,0][(i/3).floor.asInteger].asBoolean)).stringColor_([Color.white,Color.white,Color.fromHexString("E93000")][(i/3).floor.asInteger]).align_(\center);});
@@ -66,7 +66,7 @@ waitTime_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3
 target_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + (2 * algo_space) + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",17 * scale)).align_(\center)});
 
 chatTextField = StaticText.new(
-	w, Rect(chat_indent, chat_posY, chatSectionWidth, height)
+	w, Rect(chat_indent, chat_posY, chatSectionWidth, height/2)
 ).font_(Font("menlo", 16 * scale)).stringColor_(Color.gray);
 
 
