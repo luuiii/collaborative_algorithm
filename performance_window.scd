@@ -23,7 +23,7 @@ var chat_indent = 0.05 * width;
 
 var posY = - 0.375 * height;
 
-var chat_posY = 0.1 * height;
+var chat_posY = 0.5 * height;
 var chat_linespace = 0.03 * height;
 // How big the chat window is
 var chatSectionWidth = 0.618*width;
@@ -66,8 +66,8 @@ waitTime_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3
 target_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + (2 * algo_space) + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",17 * scale)).align_(\center)});
 
 chatTextField = StaticText.new(
-	w, Rect(chat_indent, chat_posY, chatSectionWidth, height/2)
-).font_(Font("menlo", 16 * scale)).stringColor_(Color.gray);
+	w, Rect(chat_indent, chat_posY, chatSectionWidth, height*0.395)
+).font_(Font("menlo", 16 * scale)).align_(\bottomLeft).stringColor_(Color.gray);
 
 
 w.front;
