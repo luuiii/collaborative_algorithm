@@ -4,7 +4,7 @@ var width = 1280 * scale;
 var height = 720 * scale;
 
 var indent_lmr = 0.25;
-var leftshift = 100;
+var leftshift = 0;
 var box_width = 0.21 * width;
 var left = width * (0.5 - indent_lmr) - leftshift;
 var mid = width * 0.5 - leftshift;
@@ -67,7 +67,7 @@ target_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-
 
 chatTextField = StaticText.new(
 	w, Rect(chat_indent, chat_posY, chatSectionWidth, height*0.395)
-).font_(Font("menlo", 16 * scale)).align_(\bottomLeft).stringColor_(Color.gray);
+).font_(Font("menlo", 13 * scale)).align_(\bottomLeft).stringColor_(Color.gray);
 
 
 w.front;
