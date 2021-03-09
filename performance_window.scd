@@ -104,7 +104,7 @@ Routine {
 		if((w.isClosed.not)&&(~braidisInitialized)) {
 			w.drawFunc = {
 				Pen.use {
-					Pen.width = 2.5;
+					Pen.width = 1;
 					Pen.color = Color.white;
 
 					pathBraid = pathBraid ++ [v];
