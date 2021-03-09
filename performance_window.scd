@@ -35,7 +35,7 @@ var pathBraid = [];
 var movingSpeed = 1 * scale;
 var drawWidth = 0.1;
 var chatTextField;
-var chatSentencesCount = 8;
+var chatSentencesCount = 7;
 
 // Get the display value for the chain and a key
 // for example: getValuesForKey.(\noise, \waitTime)
