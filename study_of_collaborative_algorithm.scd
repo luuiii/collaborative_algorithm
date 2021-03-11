@@ -226,7 +226,6 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 			~freqList[index] = wish_freqs.minItem + ~maxDiff
 		},{~freqList[index] = wish_freqs.maxItem - ~maxDiff})
 	},{~freqList[index] = ~freqList[index]+change});
-	~freqList.postln;
 	("***Braid freqs is: " ++ ~freqList ++ " Max diff: " ++ ~maxDiff).postln
 
 };
@@ -379,7 +378,7 @@ OSCdef(\syncConfigs, {|msg|
 						if (nextTarget.isNil, {
 							(config.name +" sending nil, stopped").postln;
 						}, {
-							(receiver +" sending next message to " ++ nextTarget.asString).postln;
+							// (receiver +" sending next message to " ++ nextTarget.asString).postln;
 							n.sendMsg(config.name, nextTarget, ~id, waitTime);
 						});
 				}.fork;},{
