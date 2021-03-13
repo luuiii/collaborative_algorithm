@@ -140,7 +140,7 @@ w.onClose_({ r.stop; runBraid = false;});
 )
 
 //just in case
-w.close
+// w.close
 
 
 
