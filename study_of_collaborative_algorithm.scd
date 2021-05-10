@@ -350,6 +350,14 @@ OSCdef(\syncConfigs, {|msg|
 		var waitTimeFn = config['waitTime'].asStream;
 		var nextTargetFn = config['nextTarget'].asStream;
 
+		if(config['waitTime'].asStream.value().isArray, {
+			Error("Chain %s can't return an array for waitTime".format(config.name.asSymbol)).throw;
+		});
+
+		if(config['nextTarget'].asStream.value().isArray, {
+			Error("Chain %s can't return an array for nextTarget".format(config.name.asSymbol)).throw;
+		});
+
 		OSCdef(config.name.asSymbol, {|msg|
 			var from = msg[2];
 			var receiver = msg[1];
