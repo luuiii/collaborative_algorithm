@@ -104,24 +104,28 @@ Routine {
 		if((w.isClosed.not)&&(~braidisInitialized)) {
 			w.drawFunc = {
 				Pen.use {
-					Pen.width = 1;
+					Pen.width = 1.1;
 					Pen.color = Color.white;
 
 					pathBraid = pathBraid ++ [v];
-					pathBraid = pathBraid.keep(-1*(width-(2*indentBraid)).asInteger);
+					// Keep the last X items so it fit into the screen
+					pathBraid = pathBraid.keep(
+						(-1/scale*(width-(2*indentBraid))).asInteger
+					);
+
 					3.do {|i|
 						Pen.beginPath;
 						pathBraid.collect({|p, q|
 							Pen.moveTo(
 								Point(
 									indentBraid + (q*movingSpeed),
-									pathBraid[q][i].linlin(50, 1700, 0.9*height, 0.07*height)
+									pathBraid[q][i].linlin(50, 10500, 0.9*height, 0.07*height)
 								)
 							);
 							Pen.lineTo(
 								Point(
-									indentBraid*1.025 + (q*movingSpeed),
-									pathBraid[q][i].linlin(50, 1700, 0.9*height, 0.07*height)
+									indentBraid*1.075 + (q*movingSpeed),
+									pathBraid[q][i].linlin(50, 10500, 0.9*height, 0.07*height)
 								)
 							);
 							Pen.stroke;
@@ -139,13 +143,6 @@ CmdPeriod.doOnce({ w.close });
 w.onClose_({ r.stop; runBraid = false;});
 )
 
+
 //just in case
 // w.close
-
-
-
-// (~histogram.value(\buildUp).isNil).if({""},{~histogram.value(\buildUp).collect({|i|
-// 	((i == 0)||(i == 1)||(i == 2)).if({i = ~partialCount});
-// 	i = i.asString++(" "!88).join;
-// }).join})
-// ~userChainVisualConfigs
