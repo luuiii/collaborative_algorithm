@@ -146,7 +146,7 @@ SynthDef(\braid, {|freq=440, amp=0.12, pan = 0, attack = 1, gate = 1, freqBus = 
 		gate: gate,
 	);
 
-	#detectedFreq, hasFreq = Pitch.kr(sig);
+	#detectedFreq, hasFreq = Pitch.kr(sig, minFreq:40, maxFreq: 10500);
 	sig = Pan2.ar(sig, pan);
 	sig = sig*env*amp;
 
