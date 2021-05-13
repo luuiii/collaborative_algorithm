@@ -141,13 +141,3 @@ w.onClose_({ r.stop; runBraid = false;});
 
 //just in case
 // w.close
-
-
-
-// (~histogram.value(\buildUp).isNil).if({""},{~histogram.value(\buildUp).collect({|i|
-// 	((i == 0)||(i == 1)||(i == 2)).if({i = ~partialCount});
-// 	i = i.asString++(" "!88).join;
-// }).join})
-// ~userChainVisualConfigs
-
-s.sendMsg("n_free", 1000)
