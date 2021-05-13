@@ -115,13 +115,13 @@ Routine {
 							Pen.moveTo(
 								Point(
 									indentBraid + (q*movingSpeed),
-									pathBraid[q][i].linlin(50, 1700, 0.9*height, 0.07*height)
+									pathBraid[q][i].linexp(50, 11000, 0.9*height, 0.07*height)
 								)
 							);
 							Pen.lineTo(
 								Point(
 									indentBraid*1.025 + (q*movingSpeed),
-									pathBraid[q][i].linlin(50, 1700, 0.9*height, 0.07*height)
+									pathBraid[q][i].linexp(50, 11000, 0.9*height, 0.07*height)
 								)
 							);
 							Pen.stroke;
@@ -149,3 +149,5 @@ w.onClose_({ r.stop; runBraid = false;});
 // 	i = i.asString++(" "!88).join;
 // }).join})
 // ~userChainVisualConfigs
+
+s.sendMsg("n_free", 1000)
