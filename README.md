@@ -8,7 +8,7 @@ dates:
 - [TOPLAP Live Stream](https://transnodal.toplap.org/) - 19.Feb.2021 - CET 21:00 - 01:00
 - escdotdot presents [ _  _  _ ] - [collaborative algorithmic music performance](https://ava.hkbu.edu.hk/en/events/___)  @ HK - 14.Mar.2021 - HKT 19:00 - 20:00
 - [algopolis live Ljudmila](https://wiki.ljudmila.org/Algopolis_live) @ ljubljana - 14.May.2021 - CEST 22:10 - 22:30
-- kelong concert @ cologn - August 2021
+- kelong concert @ cologne - August 2021
 
 #### Questions:
 - Algorithm in context of Network Music: how could Algorithm be collaborative and distributed?
