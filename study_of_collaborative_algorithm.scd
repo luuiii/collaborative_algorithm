@@ -16,7 +16,7 @@ n = NetAddr("127.0.0.1", 57140);
 // Jia - 0
 // Song - 1
 // Shuoxin - 2
-~id = 3;
+~id = 2;
 ~userNameList = [
 	"jia",
 	"song",
@@ -157,7 +157,7 @@ SynthDef(\braid, {|freq=440, amp=0.12, pan = 0, attack = 1, gate = 1, freqBus = 
 SynthDef(\gai_id,{|freq=440, amp=0.12, pan = 0, dur = 1|
 	var sig = SinOsc.ar(freq);
 	var env = EnvGen.kr(
-		Env([0, 1, 0], [0.005, 0.5]),
+		Env([0, 1, 1, 0], [0.01, 0.98, 0.01]),
 		doneAction: 2,
 		timeScale: dur
 	);
