@@ -44,7 +44,7 @@ n = NetAddr("127.0.0.1", 57140);
 ~partialAmpMultiplier = 1;
 
 ~genPartialConfig = {
-	~partialVolumes = Array.rand(~partialThreshold, 0.01, 0.04) * ~partialAmpMultiplier;
+	~partialVolumes = Array.rand(~partialThreshold, 0.012, 0.045) * ~partialAmpMultiplier;
 	~partialList = [500] + Array.series(
 		~partialThreshold, 50, rrand(40, 55) * ~partialStepMultiplier
 	);
@@ -86,7 +86,7 @@ n = NetAddr("127.0.0.1", 57140);
 };
 
 ~updatePartialAmpMultiplier = { |val|
-	if(val.isNumber && val > 0, {
+	if(val.isNumber && val >= 0, {
 		("***Update partial amp multiplier to :" ++ val).postln;
 		~partialAmpMultiplier = val;
 		~genPartialConfig.value();
@@ -123,7 +123,7 @@ OSCdef(\build_up_partial_step_multiplier, {|msg|
 	~updatePartialStepMultiplier.(msg[1]);
 }, \build_up_partial_step_multiplier);
 
-SynthDef(\sine, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1|
+SynthDef(\sine, {|freq=440, amp=0.12, pan = 0, attack = 1, gate = 1|
 	var sig = SinOsc.ar(freq + LFNoise2.kr(1, 0));
 	var env = EnvGen.kr(
 		Env([0, 1, 0], [attack, Rand(5, 10)], releaseNode: 1),
@@ -136,7 +136,7 @@ SynthDef(\sine, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1|
 }).add;
 
 
-SynthDef(\braid, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1, freqBus = 0, release=10|
+SynthDef(\braid, {|freq=440, amp=0.12, pan = 0, attack = 1, gate = 1, freqBus = 0, release=10|
 	var detectedFreq, hasFreq;
 	var lagFreq = freq.lag(10);
 	var sig = SinOsc.ar(lagFreq);
@@ -146,7 +146,7 @@ SynthDef(\braid, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1, freqBus = 0
 		gate: gate,
 	);
 
-	#detectedFreq, hasFreq = Pitch.kr(sig);
+	#detectedFreq, hasFreq = Pitch.kr(sig, minFreq:40, maxFreq: 10500);
 	sig = Pan2.ar(sig, pan);
 	sig = sig*env*amp;
 
@@ -154,7 +154,7 @@ SynthDef(\braid, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1, freqBus = 0
 	Out.kr(freqBus, [detectedFreq]);
 }).add;
 
-SynthDef(\gai_id,{|freq=440, amp=0.1, pan = 0, dur = 1|
+SynthDef(\gai_id,{|freq=440, amp=0.12, pan = 0, dur = 1|
 	var sig = SinOsc.ar(freq);
 	var env = EnvGen.kr(
 		Env([0, 1, 0], [0.005, 0.5]),
@@ -193,7 +193,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 			var freqs = [300, 700, 2300];
 
 			Synth(\noise, [
-				\amp, 0.2,
+				\amp, 0.25,
 				\freq, freqs[to],
 				\rq, 0.5,
 				\pan, panMap[from],
@@ -213,7 +213,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 };
 
 // Braid configs
-~freqList = [419, 419, 419];
+~freqList = [10000, 10000, 10000];
 ~maxDiff = 100;
 ~braidBus = Bus.new(\control, 0, ~userList.size);
 
@@ -226,7 +226,6 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 			~freqList[index] = wish_freqs.minItem + ~maxDiff
 		},{~freqList[index] = wish_freqs.maxItem - ~maxDiff})
 	},{~freqList[index] = ~freqList[index]+change});
-	~freqList.postln;
 	("***Braid freqs is: " ++ ~freqList ++ " Max diff: " ++ ~maxDiff).postln
 
 };
@@ -351,6 +350,14 @@ OSCdef(\syncConfigs, {|msg|
 		var waitTimeFn = config['waitTime'].asStream;
 		var nextTargetFn = config['nextTarget'].asStream;
 
+		if(config['waitTime'].asStream.value().isArray, {
+			Error("Chain %s can't return an array for waitTime".format(config.name.asSymbol)).throw;
+		});
+
+		if(config['nextTarget'].asStream.value().isArray, {
+			Error("Chain %s can't return an array for nextTarget".format(config.name.asSymbol)).throw;
+		});
+
 		OSCdef(config.name.asSymbol, {|msg|
 			var from = msg[2];
 			var receiver = msg[1];
@@ -379,7 +386,7 @@ OSCdef(\syncConfigs, {|msg|
 						if (nextTarget.isNil, {
 							(config.name +" sending nil, stopped").postln;
 						}, {
-							(receiver +" sending next message to " ++ nextTarget.asString).postln;
+							// (receiver +" sending next message to " ++ nextTarget.asString).postln;
 							n.sendMsg(config.name, nextTarget, ~id, waitTime);
 						});
 				}.fork;},{
