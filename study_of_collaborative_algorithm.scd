@@ -16,7 +16,7 @@ n = NetAddr("127.0.0.1", 57140);
 // Jia - 0
 // Song - 1
 // Shuoxin - 2
-~id = 3;
+~id = 0;
 ~userNameList = [
 	"jia",
 	"song",
@@ -200,7 +200,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 				\dur, waitTime.value() * 0.4,
 			]);
 		}, {
-			var freqs = [400, 600, 900];
+			var freqs = [700, 700, 700];
 			// var pans = [-1, 0, 1];
 
 			Synth(\gai_id, [
