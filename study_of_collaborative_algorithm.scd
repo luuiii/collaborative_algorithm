@@ -200,7 +200,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 				\dur, waitTime.value() * 0.4,
 			]);
 		}, {
-			var freqs = [900, 900, 900];
+			var freqs = [700, 700, 700];
 			// var pans = [-1, 0, 1];
 
 			Synth(\gai_id, [
