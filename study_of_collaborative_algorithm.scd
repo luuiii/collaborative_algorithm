@@ -16,7 +16,7 @@ n = NetAddr("127.0.0.1", 57140);
 // Jia - 0
 // Song - 1
 // Shuoxin - 2
-~id = 0;
+~id = 2;
 ~userNameList = [
 	"jia",
 	"song",
@@ -375,6 +375,8 @@ OSCdef(\syncConfigs, {|msg|
 			var from = msg[2];
 			var receiver = msg[1];
 			var lastWaitTime = msg[3];
+			var attack = msg[4];
+			var sustain = msg[5];
 			var toRespond = ~respondChecker.(receiver);
 
 			~histo[config.name] = (~histo[config.name]?[]).insert(0, [from, receiver]);
@@ -382,7 +384,7 @@ OSCdef(\syncConfigs, {|msg|
 
 			~play_message.(
 				config.name.asSymbol, from, receiver, lastWaitTime,
-				attackFn.value(), sustainFn.value()
+				attack, sustain
 			);
 
 			if(toRespond,
@@ -404,7 +406,11 @@ OSCdef(\syncConfigs, {|msg|
 							(config.name +" sending nil, stopped").postln;
 						}, {
 							// (receiver +" sending next message to " ++ nextTarget.asString).postln;
-							n.sendMsg(config.name, nextTarget, ~id, waitTime);
+							n.sendMsg(
+								config.name, nextTarget, ~id, waitTime,
+								attackFn.value(),
+								sustainFn.value()
+							);
 						});
 				}.fork;},{
 					//else?
