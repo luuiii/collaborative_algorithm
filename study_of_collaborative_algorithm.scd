@@ -16,7 +16,7 @@ n = NetAddr("127.0.0.1", 57140);
 // Jia - 0
 // Song - 1
 // Shuoxin - 2
-~id = 2;
+~id = 0;
 ~userNameList = [
 	"jia",
 	"song",
@@ -154,10 +154,17 @@ SynthDef(\braid, {|freq=440, amp=0.12, pan = 0, attack = 1, gate = 1, freqBus = 
 	Out.kr(freqBus, [detectedFreq]);
 }).add;
 
-SynthDef(\gai_id,{|freq=440, amp=0.12, pan = 0, dur = 1|
+
+SynthDef(\gai_id,{|
+	freq=440, amp=0.12, pan = 0, dur = 1, attack=0.1, sustain=0.8
+	|
 	var sig = SinOsc.ar(freq);
 	var env = EnvGen.kr(
-		Env([0, 1, 1, 0], [0.01, 0.98, 0.01]),
+		Env([0, 1, 1, 0], [
+			(1 - sustain) * attack,
+			sustain,
+			(1 - sustain) * (1 - attack)
+		]),
 		doneAction: 2,
 		timeScale: dur
 	);
@@ -182,7 +189,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 	Out.ar(out, sig);
 }).add;
 
-~play_message = {|queueName, from, to, waitTime|
+~play_message = {|queueName, from, to, waitTime, attack, sustain|
 	var panMap = [-1, 0, 1];
 	switch(queueName,
 		\buildUp, {
@@ -206,11 +213,14 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 			Synth(\gai_id, [
 				\freq, freqs[to] * waitTime.value().linexp(0, 19, 8, 0.00000001),
 				\pan, panMap[from],
-				\dur: waitTime.value() * 0.5,
+				\dur, waitTime.value() * 0.5,
+				\attack, attack ? 0.1,
+				\sustain, sustain ? 0.7,
 			]);
 		}
 	);
 };
+
 
 // Braid configs
 ~freqList = [10000, 10000, 10000];
@@ -350,6 +360,9 @@ OSCdef(\syncConfigs, {|msg|
 		var waitTimeFn = config['waitTime'].asStream;
 		var nextTargetFn = config['nextTarget'].asStream;
 
+		var attackFn = config['attack'].asStream;
+		var sustainFn = config['sustain'].asStream;
+
 		if(config['waitTime'].asStream.value().isArray, {
 			Error("Chain %s can't return an array for waitTime".format(config.name.asSymbol)).throw;
 		});
@@ -366,7 +379,11 @@ OSCdef(\syncConfigs, {|msg|
 
 			~histo[config.name] = (~histo[config.name]?[]).insert(0, [from, receiver]);
 			// (config.name.asString++":"++~histogram.value(config.name)).postln;
-			~play_message.(config.name.asSymbol, from, receiver, lastWaitTime);
+
+			~play_message.(
+				config.name.asSymbol, from, receiver, lastWaitTime,
+				attackFn.value(), sustainFn.value()
+			);
 
 			if(toRespond,
 				{

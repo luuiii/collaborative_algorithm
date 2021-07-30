@@ -16,8 +16,10 @@
 ~configs = [(
 	// sine sound
 	name: \sine,
-	waitTime: {1.exp},
-	nextTarget: {[0, 1, 2].choose}
+	waitTime: {1},
+	nextTarget: {[0].choose},
+	attack: {rrand(0.1, 0.1)},
+	sustain: {0.1}
 ), (
 	// noise sound
 	name: \noise,
@@ -75,7 +77,7 @@ n.sendMsg('/chat', ~id, "hello world");
 // Start the sine chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/sine', to, ~id, 0.1);
+n.sendMsg('/sine', 0, ~id, 0.1);
 )
 
 (
