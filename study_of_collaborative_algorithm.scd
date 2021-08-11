@@ -173,11 +173,15 @@ SynthDef(\gai_id,{|
 	Out.ar(0,sig)
 }).add;
 
-SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
+SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5,sustain= 0.998 pan=0| //dur_5 could be tested later
 	var in = GrayNoise.ar(1);
 	var sig = BPF.ar(in, freq, rq);
 	var env = EnvGen.kr(
-		Env([0, 1, 1, 0], [0.001, 1, 0.001]),
+		Env([0, 1, 1, 0], [
+			(1 - sustain) * attack,
+			sustain,
+			(1 - sustain) * (1 - attack)
+		]),
 		timeScale: dur,
 		doneAction: 2,
 	);
@@ -205,6 +209,8 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 				\rq, 0.5,
 				\pan, panMap[from],
 				\dur, waitTime.value() * 0.4,
+				\attack, attack ? 0.5,
+				\sustain, sustain ? 0.998,
 			]);
 		}, {
 			var freqs = [700, 700, 700];
@@ -215,7 +221,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 				\pan, panMap[from],
 				\dur, waitTime.value() * 0.5,
 				\attack, attack ? 0.1,
-				\sustain, sustain ? 0.7,
+				\sustain, sustain ? 0.8,
 			]);
 		}
 	);
@@ -223,7 +229,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 
 
 // Braid configs
-~freqList = [10000, 10000, 10000];
+~freqList = [2222, 2222];
 ~maxDiff = 100;
 ~braidBus = Bus.new(\control, 0, ~userList.size);
 
@@ -269,7 +275,8 @@ OSCdef(\apply_freq,{|msg|
 		~braidSynth = ~freqList.collect({|item, index|
 			Synth(\braid, [
 				\freq, item,
-				\pan, [-1,0,1][index],
+				\pan, [-1,1][index],
+//				\pan, [-0.8,0.8][index], //for headphones
 				\freqBus, ~braidBus.index + index,
 			]);
 		});
@@ -392,12 +399,16 @@ OSCdef(\syncConfigs, {|msg|
 					{
 						var nextTarget = nextTargetFn.value();
 						var waitTime = waitTimeFn.value();
+						var attack = attackFn.value();
+						var sustain = sustainFn.value();
 
 						// Debug logging
 						// ("***********").postln;
 						// ("**" ++ config.name ++ "**:").postln;
 						// ("Next target is " ++ nextTarget).postln;
 						// ("Getting wait time " ++ waitTime).postln;
+						 ("Getting attack " ++ attack).postln;
+						 ("Getting sustain " ++ sustain).postln;
 						// ("***********").postln;
 						waitTime.wait;
 

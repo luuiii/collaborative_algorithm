@@ -61,9 +61,9 @@ w.view.background = Color.black;
 
 line = Array.fill(9,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.75*box_width), 1.07*posY + ((i/3).floor*line_space), box_width, height)).font_(Font("Helvetica Neue",4.5*[32,32,5][(i/3).floor.asInteger] * scale,[0,1,0][(i/3).floor.asInteger].asBoolean,[0,1,0][(i/3).floor.asInteger].asBoolean)).stringColor_([Color.white,Color.white,Color.fromHexString("E93000")][(i/3).floor.asInteger]).align_(\center);});
 
-waitTime_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + algo_space + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",17 * scale)).align_(\center)});
+waitTime_array = Array.fill(9,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + algo_space + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",17 * scale)).align_(\center)});
 
-target_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + (2 * algo_space) + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",17 * scale)).align_(\center)});
+target_array = Array.fill(9,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + (2 * algo_space) + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",17 * scale)).align_(\center)});
 
 chatTextField = StaticText.new(
 	w, Rect(chat_indent, chat_posY, chatSectionWidth, height*0.395)
@@ -99,7 +99,7 @@ r = {
 
 Routine {
 	while { runBraid } {
-		var v = ~braidBus.getnSynchronous(3);
+		var v = ~braidBus.getnSynchronous(2);
 
 		if((w.isClosed.not)&&(~braidisInitialized)) {
 			w.drawFunc = {
@@ -113,7 +113,7 @@ Routine {
 						(-1/scale*(width-(2*indentBraid))).asInteger
 					);
 
-					3.do {|i|
+					2.do {|i|
 						Pen.beginPath;
 						pathBraid.collect({|p, q|
 							Pen.moveTo(

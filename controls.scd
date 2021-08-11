@@ -16,16 +16,18 @@
 ~configs = [(
 	// sine sound
 	name: \sine,
-	waitTime: {1},
+	waitTime: {0.3},
 	nextTarget: {[2].choose},
-	attack: {0.1},
-	sustain: {0.8}
+	attack: Pseq(0.1*(9..1),inf),
+	sustain: Pseq(0.1*(2..9),inf)
 ), (
 	// noise sound
 	name: \noise,
-	waitTime: {1.exp},
-	nextTarget: {[0, 1, 2].choose}
-),  (
+	waitTime: {1},
+	nextTarget: {[2].choose},
+	attack: Pseq(0.1*(1..9),inf),
+	sustain: Pseq(0.1*(4..1),inf)
+), (
 	// Build up queue
 	name: \buildUp,
 	waitTime: {10.rand},
@@ -45,14 +47,14 @@
 // Send braid change
 // positive number means add freq to the oscillator
 // negative means minus
-n.sendMsg('/braid', ~id, 1);
+n.sendMsg('/braid', 0, -33);
 )
-
+s.meter
 // Kill braid!
 n.sendMsg('/braid_kill');
 
 // Update braid max diff! (in frequency)
-n.sendMsg('/braid_update_maxdiff', 200);
+n.sendMsg('/braid_update_maxdiff', 1000);
 
 // ***** Build up
 
@@ -84,9 +86,8 @@ n.sendMsg('/sine', 2, ~id, 0.1);
 // start the noise chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/noise', to, ~id, 0.1);
+n.sendMsg('/noise', 2, ~id, 1);
 )
-
 
 (
 // Start the buildUp queue
