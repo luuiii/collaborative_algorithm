@@ -9,7 +9,6 @@
 
 //to-do: maybe play a bit with sound
 
-
 (
 n = NetAddr("127.0.0.1", 57140);
 // The performer's ID
@@ -19,9 +18,9 @@ n = NetAddr("127.0.0.1", 57140);
 ~id = 2;
 ~userNameList = [
 	"jia",
+	"-",
 	"song",
 	"shuoxin",
-	"edward",
 ];
 ~userList = [0, 1, 2];
 
@@ -173,7 +172,7 @@ SynthDef(\gai_id,{|
 	Out.ar(0,sig)
 }).add;
 
-SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5,sustain= 0.998 pan=0| //dur_5 could be tested later
+SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5,sustain= 0.998, pan=0| //dur_5 could be tested later
 	var in = GrayNoise.ar(1);
 	var sig = BPF.ar(in, freq, rq);
 	var env = EnvGen.kr(
@@ -399,16 +398,16 @@ OSCdef(\syncConfigs, {|msg|
 					{
 						var nextTarget = nextTargetFn.value();
 						var waitTime = waitTimeFn.value();
-						var attack = attackFn.value();
-						var sustain = sustainFn.value();
+						//var attack = attackFn.value();
+						//var sustain = sustainFn.value();
 
 						// Debug logging
 						// ("***********").postln;
 						// ("**" ++ config.name ++ "**:").postln;
 						// ("Next target is " ++ nextTarget).postln;
 						// ("Getting wait time " ++ waitTime).postln;
-						 ("Getting attack " ++ attack).postln;
-						 ("Getting sustain " ++ sustain).postln;
+						//("Getting attack " ++ attack).postln;
+						//("Getting sustain " ++ sustain).postln;
 						// ("***********").postln;
 						waitTime.wait;
 

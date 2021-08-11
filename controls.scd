@@ -18,15 +18,15 @@
 	name: \sine,
 	waitTime: {0.3},
 	nextTarget: {[2].choose},
-	attack: Pseq(0.1*(9..1),inf),
-	sustain: Pseq(0.1*(2..9),inf)
+	attack: {0.01},
+	sustain: {0.9}
 ), (
 	// noise sound
 	name: \noise,
 	waitTime: {1},
 	nextTarget: {[2].choose},
-	attack: Pseq(0.1*(1..9),inf),
-	sustain: Pseq(0.1*(4..1),inf)
+	attack: {0.5},
+	sustain: {0.998}
 ), (
 	// Build up queue
 	name: \buildUp,
@@ -47,7 +47,7 @@
 // Send braid change
 // positive number means add freq to the oscillator
 // negative means minus
-n.sendMsg('/braid', 0, -33);
+n.sendMsg('/braid', 0, -1);
 )
 s.meter
 // Kill braid!
