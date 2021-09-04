@@ -232,7 +232,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 			})
 		}, {
 			if(respondToEvent, {
-				var freqs = [700, 700, 700];
+				var freqs = [400, 600, 900];
 				Synth(\gai_id, [
 					\freq, freqs[to] * waitTime.value().linexp(0, 19, 8, 0.00000001),
 					\pan, ~panFunc.value(from),
