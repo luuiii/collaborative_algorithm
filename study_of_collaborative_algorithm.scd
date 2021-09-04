@@ -69,6 +69,17 @@ n = NetAddr("127.0.0.1", 57140);
 	~partialCount = ~partialCount + 1;
 };
 
+~offlinePanMap = {|loc|
+	0;
+};
+
+~panMap = {|loc|
+	var panMap = [-1, 0, 1];
+	panMap[loc];
+};
+
+~panFunc = if(~offlinePerformance, ~offlinePanMap, ~panMap);
+
 ~checkPartial = {
 	if ( ~partialCount >= ~partialThreshold, {
 		~sineGroup.set(\gate, 0);
@@ -190,21 +201,14 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 	Out.ar(out, sig);
 }).add;
 
-~offlinePanMap = {|loc|
-	0;
-}
 
-~panMap = { |loc|
-	var panMap = [-1, 0, 1];
-	panMap[loc];
-}
+~responseToEventForLoc = {|loc|
+	~offlinePerformance.not || (~isSelfChecker.value(loc));
+};
 
 ~play_message = {|queueName, from, to, waitTime, attack, sustain|
 	// When it's offline and it's not for you. We do nothing
-	var panFunc = if(~offlinePerformance, ~offlinePanMap, ~panMap);
-	if(~offlinePerformance &&  !~isSelfChecker.(from), {
-		//
-	}, {
+	if(~responseToEventForLoc.(from), {
 		switch(queueName,
 		\buildUp, {
 			~checkPartial.value();
@@ -217,21 +221,21 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 				\amp, 0.25,
 				\freq, freqs[to],
 				\rq, 0.5,
-				\pan, panFunc.value(from),
+				\pan, ~panFunc.value(from),
 				\dur, waitTime.value() * 0.4,
 			]);
 		}, {
 			var freqs = [700, 700, 700];
 			Synth(\gai_id, [
 				\freq, freqs[to] * waitTime.value().linexp(0, 19, 8, 0.00000001),
-				\pan, panFunc.value(from])
+				\pan, ~panFunc.value(from),
 				\dur, waitTime.value() * 0.5,
 				\attack, attack ? 0.1,
 				\sustain, sustain ? 0.7,
 			]);
 		}
 		);
-	})
+	});
 };
 
 
@@ -280,11 +284,13 @@ OSCdef(\apply_freq,{|msg|
 		"braidSynth Initialized ".postln;
 		~braidisInitialized = true;
 		~braidSynth = ~freqList.collect({|item, index|
-			Synth(\braid, [
-				\freq, item,
-				\pan, [-1,0,1][index],
-				\freqBus, ~braidBus.index + index,
-			]);
+			if (~responseToEventForLoc.value(index), {
+				Synth(\braid, [
+					\freq, item,
+					\pan, ~panFunc.value(index),
+					\freqBus, ~braidBus.index + index,
+				]);
+			});
 		});
 	},{
 		~applyFreqChange.value(msg[1],msg[2]);
