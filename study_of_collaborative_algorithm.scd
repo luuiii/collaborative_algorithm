@@ -56,16 +56,19 @@ n = NetAddr("127.0.0.1", 57140);
 
 ~sineGroup = Group.new(addAction: \addToTail);
 
-~addPartial = {
+~addPartial = {|genSound|
 	var freq = ~partialList[~partialCount];
 	var amp = ~partialVolumes[~partialCount];
 	("Adding one partial number:" ++ ~partialCount ++ " with freq: " ++ freq).postln;
 
-	Synth(\sine,
-		[\freq, freq, \amp, amp],
-		~sineGroup,
-		\addToTail
-	);
+	if(genSound, {
+		Synth(\sine,
+			[\freq, freq, \amp, amp],
+			~sineGroup,
+			\addToTail
+		);
+	});
+
 	~partialCount = ~partialCount + 1;
 };
 
@@ -208,34 +211,38 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 
 ~play_message = {|queueName, from, to, waitTime, attack, sustain|
 	// When it's offline and it's not for you. We do nothing
-	if(~responseToEventForLoc.(from), {
-		switch(queueName,
+	var respondToEvent = ~responseToEventForLoc.(from);
+
+	switch(queueName,
 		\buildUp, {
 			~checkPartial.value();
-			~addPartial.value();
+			~addPartial.value(genSound: respondToEvent);
 		},
 		\noise, {
-			var freqs = [300, 700, 2300];
+			if(respondToEvent, {
+				var freqs = [300, 700, 2300];
 
-			Synth(\noise, [
-				\amp, 0.25,
-				\freq, freqs[to],
-				\rq, 0.5,
-				\pan, ~panFunc.value(from),
-				\dur, waitTime.value() * 0.4,
-			]);
+				Synth(\noise, [
+					\amp, 0.25,
+					\freq, freqs[to],
+					\rq, 0.5,
+					\pan, ~panFunc.value(from),
+					\dur, waitTime.value() * 0.4,
+				]);
+			})
 		}, {
-			var freqs = [700, 700, 700];
-			Synth(\gai_id, [
-				\freq, freqs[to] * waitTime.value().linexp(0, 19, 8, 0.00000001),
-				\pan, ~panFunc.value(from),
-				\dur, waitTime.value() * 0.5,
-				\attack, attack ? 0.1,
-				\sustain, sustain ? 0.7,
-			]);
+			if(respondToEvent, {
+				var freqs = [700, 700, 700];
+				Synth(\gai_id, [
+					\freq, freqs[to] * waitTime.value().linexp(0, 19, 8, 0.00000001),
+					\pan, ~panFunc.value(from),
+					\dur, waitTime.value() * 0.5,
+					\attack, attack ? 0.1,
+					\sustain, sustain ? 0.7,
+				]);
+			})
 		}
-		);
-	});
+	);
 };
 
 
