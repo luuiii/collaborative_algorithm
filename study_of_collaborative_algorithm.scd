@@ -15,7 +15,7 @@ n = NetAddr("127.0.0.1", 57140);
 // Jia - 0
 // Song - 1
 // Shuoxin - 2
-~id = 2;
+~id = 1;
 ~userNameList = [
 	"jia",
 	"song",
@@ -78,10 +78,14 @@ n = NetAddr("127.0.0.1", 57140);
 
 ~panMap = {|loc|
 	var panMap = [-1, 0, 1];
-	panMap[loc];
+	~panMapList[loc];
 };
 
-~panFunc = if(~offlinePerformance, ~offlinePanMap, ~panMap);
+~panFunc = if(~offlinePerformance, {
+	~offlinePanMap;
+}, {
+	~panMap;
+});
 
 ~checkPartial = {
 	if ( ~partialCount >= ~partialThreshold, {
