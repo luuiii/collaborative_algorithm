@@ -78,7 +78,7 @@ n = NetAddr("127.0.0.1", 57140);
 
 ~panMap = {|loc|
 	var panMap = [-1, 0, 1];
-	~panMapList[loc];
+	panMap[loc];
 };
 
 ~panFunc = if(~offlinePerformance, {
@@ -408,6 +408,9 @@ OSCdef(\syncConfigs, {|msg|
 			var attack = msg[4];
 			var sustain = msg[5];
 			var toRespond = ~isSelfChecker.(receiver);
+
+			// "whether to response?".postln;
+			// toRespond.postln;
 
 			~histo[config.name] = (~histo[config.name]?[]).insert(0, [from, receiver]);
 			// (config.name.asString++":"++~histogram.value(config.name)).postln;

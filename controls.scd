@@ -19,7 +19,7 @@
 	// sine sound
 	name: \sine,
 	waitTime: {1},
-	nextTarget: {[2].choose},
+	nextTarget: {[1].choose},
 	attack: {0.1},
 	sustain: {0.8}
 ), (
@@ -72,18 +72,14 @@ n.sendMsg('/\build_up_partial_amp_multiplier', 1);
 
 //////////////////////////////////////////chat
 
-n.sendMsg('/chat', ~id, "hello world");
+n.sendMsg('/chat', ~id, "zaima");
 
 // **** Kick off the chain
 (
 // Start the sine chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-<<<<<<< Updated upstream
-n.sendMsg('/sine', 2, ~id, 0.1);
-=======
-n.sendMsg('/sine', 0, ~id, 1);
->>>>>>> Stashed changes
+n.sendMsg('/sine', 1, 1, 1);
 )
 
 (
