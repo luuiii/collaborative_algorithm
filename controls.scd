@@ -13,6 +13,8 @@
 //     remember to always put "inf" in the repeats
 // waitTime: Pseq([0.1, 0.2, 0.3], inf)
 (
+// This is the switch to control whether we are playing in a physical venue
+~offlinePerformance = true;
 ~configs = [(
 	// sine sound
 	name: \sine,
@@ -24,7 +26,7 @@
 	// noise sound
 	name: \noise,
 	waitTime: {1.exp},
-	nextTarget: {[0, 1, 2].choose}
+	nextTarget: {[0].choose}
 ),  (
 	// Build up queue
 	name: \buildUp,
@@ -77,7 +79,11 @@ n.sendMsg('/chat', ~id, "hello world");
 // Start the sine chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
+<<<<<<< Updated upstream
 n.sendMsg('/sine', 2, ~id, 0.1);
+=======
+n.sendMsg('/sine', 0, ~id, 1);
+>>>>>>> Stashed changes
 )
 
 (

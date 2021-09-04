@@ -3,12 +3,11 @@
 //////////Jia__&__Song__&__Shuoxin/////////
 
 // Last updated time
-// 20210214
+// 20210904
 
 //date1123: responding state chart for every one
 
 //to-do: maybe play a bit with sound
-
 
 (
 n = NetAddr("127.0.0.1", 57140);
@@ -25,6 +24,8 @@ n = NetAddr("127.0.0.1", 57140);
 ];
 ~userList = [0, 1, 2];
 
+// To read the offline mode from config, if it's not there
+~offlinePerformance = if(~offlinePerformance.isNil, false, ~offlinePerformance);
 ~histo = ();
 ~chat = [];
 ~histogram = {|name| (~histo[name]?[])[..0].collect({|msg|
@@ -34,7 +35,7 @@ n = NetAddr("127.0.0.1", 57140);
 	array[from] = to;
 })[0]};
 
-~respondChecker = {|n| n==~id};
+~isSelfChecker = {|n| n==~id};
 
 // Build up chain settings
 
@@ -189,9 +190,22 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 	Out.ar(out, sig);
 }).add;
 
-~play_message = {|queueName, from, to, waitTime, attack, sustain|
+~offlinePanMap = {|loc|
+	0;
+}
+
+~panMap = { |loc|
 	var panMap = [-1, 0, 1];
-	switch(queueName,
+	panMap[loc];
+}
+
+~play_message = {|queueName, from, to, waitTime, attack, sustain|
+	// When it's offline and it's not for you. We do nothing
+	var panFunc = if(~offlinePerformance, ~offlinePanMap, ~panMap);
+	if(~offlinePerformance &&  !~isSelfChecker.(from), {
+		//
+	}, {
+		switch(queueName,
 		\buildUp, {
 			~checkPartial.value();
 			~addPartial.value();
@@ -203,22 +217,21 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 				\amp, 0.25,
 				\freq, freqs[to],
 				\rq, 0.5,
-				\pan, panMap[from],
+				\pan, panFunc.value(from),
 				\dur, waitTime.value() * 0.4,
 			]);
 		}, {
 			var freqs = [700, 700, 700];
-			// var pans = [-1, 0, 1];
-
 			Synth(\gai_id, [
 				\freq, freqs[to] * waitTime.value().linexp(0, 19, 8, 0.00000001),
-				\pan, panMap[from],
+				\pan, panFunc.value(from])
 				\dur, waitTime.value() * 0.5,
 				\attack, attack ? 0.1,
 				\sustain, sustain ? 0.7,
 			]);
 		}
-	);
+		);
+	})
 };
 
 
@@ -377,7 +390,7 @@ OSCdef(\syncConfigs, {|msg|
 			var lastWaitTime = msg[3];
 			var attack = msg[4];
 			var sustain = msg[5];
-			var toRespond = ~respondChecker.(receiver);
+			var toRespond = ~isSelfChecker.(receiver);
 
 			~histo[config.name] = (~histo[config.name]?[]).insert(0, [from, receiver]);
 			// (config.name.asString++":"++~histogram.value(config.name)).postln;
