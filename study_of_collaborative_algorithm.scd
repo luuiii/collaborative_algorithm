@@ -81,11 +81,13 @@ n = NetAddr("127.0.0.1", 57140);
 	panMap[loc];
 };
 
-~panFunc = if(~offlinePerformance, {
-	~offlinePanMap;
-}, {
-	~panMap;
-});
+~getPanFunc = {
+	if(~offlinePerformance, {
+		~offlinePanMap;
+	}, {
+		~panMap;
+	});
+};
 
 ~checkPartial = {
 	if ( ~partialCount >= ~partialThreshold, {
@@ -216,7 +218,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 ~play_message = {|queueName, from, to, waitTime, attack, sustain|
 	// When it's offline and it's not for you. We do nothing
 	var respondToEvent = ~responseToEventForLoc.(from);
-
+	var panFunc = ~getPanFunc.value();
 	switch(queueName,
 		\buildUp, {
 			~checkPartial.value();
@@ -230,7 +232,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 					\amp, 0.25,
 					\freq, freqs[to],
 					\rq, 0.5,
-					\pan, ~panFunc.value(from),
+					\pan, panFunc.value(from),
 					\dur, waitTime.value() * 0.4,
 				]);
 			})
@@ -239,7 +241,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 				var freqs = [400, 600, 900];
 				Synth(\gai_id, [
 					\freq, freqs[to] * waitTime.value().linexp(0, 19, 8, 0.00000001),
-					\pan, ~panFunc.value(from),
+					\pan, panFunc.value(from),
 					\dur, waitTime.value() * 0.5,
 					\attack, attack ? 0.1,
 					\sustain, sustain ? 0.7,
@@ -251,7 +253,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, pan=0|
 
 
 // Braid configs
-~freqList = [10000, 10000, 10000];
+~freqList = [5000, 5000, 5000];
 ~maxDiff = 100;
 ~braidBus = Bus.new(\control, 0, ~userList.size);
 
@@ -298,7 +300,7 @@ OSCdef(\apply_freq,{|msg|
 			if (~responseToEventForLoc.value(index), {
 				Synth(\braid, [
 					\freq, item,
-					\pan, ~panFunc.value(index),
+					\pan, ~getPanFunc.value().value(index),
 					\freqBus, ~braidBus.index + index,
 				]);
 			});

@@ -14,24 +14,24 @@
 // waitTime: Pseq([0.1, 0.2, 0.3], inf)
 (
 // This is the switch to control whether we are playing in a physical venue
-~offlinePerformance = true;
+~offlinePerformance = false;
 ~configs = [(
 	// sine sound
 	name: \sine,
 	waitTime: {1},
-	nextTarget: {[1].choose},
-	attack: {0.1},
-	sustain: {0.8}
+	nextTarget: Pxrand([0, 2], inf),
+	attack: {rrand(0.1, 0.9)},
+	sustain: Pseq([0.1, 0.9], inf)
 ), (
 	// noise sound
 	name: \noise,
-	waitTime: {1.exp},
-	nextTarget: {[0].choose}
+	waitTime: Pgeom(0.5, 0.95, inf),
+	nextTarget: Pseq([2, 0], inf)
 ),  (
 	// Build up queue
 	name: \buildUp,
 	waitTime: {10.rand},
-	nextTarget: {[0, 1, 2].choose}
+	nextTarget: {[nil].choose}
 )
 ];
 
@@ -65,21 +65,21 @@ n.sendMsg('/\build_up_kill');
 n.sendMsg('/build_up_partial_threshold', 10);
 
 // Setting the step multiplier(how big each partial grow)
-n.sendMsg('/\build_up_partial_step_multiplier', 13);
+n.sendMsg('/\build_up_partial_step_multiplier', 1);
 
 // Setting the amp multiplier(how big each partial's amp)
-n.sendMsg('/\build_up_partial_amp_multiplier', 1);
+n.sendMsg('/\build_up_partial_amp_multiplier', 0.6);
 
 //////////////////////////////////////////chat
 
-n.sendMsg('/chat', ~id, "zaima");
+n.sendMsg('/chat', ~id, "chin burger");
 
 // **** Kick off the chain
 (
 // Start the sine chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/sine', 1, 1, 1);
+n.sendMsg('/sine', to, ~id, 1);
 )
 
 (
