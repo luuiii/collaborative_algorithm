@@ -19,14 +19,16 @@
 	// sine sound
 	name: \sine,
 	waitTime: {1},
-	nextTarget: Pxrand([0, 2], inf),
-	attack: {rrand(0.1, 0.9)},
-	sustain: Pseq([0.1, 0.9], inf)
+	nextTarget: {[1].choose},
+	attack: {0.00001},
+	sustain: {1}
 ), (
 	// noise sound
 	name: \noise,
-	waitTime: Pgeom(0.5, 0.95, inf),
-	nextTarget: Pseq([2, 0], inf)
+	waitTime: {0.00001},
+	nextTarget: {[1].choose},
+	attack: {0.00001},
+	sustain: {1}
 ),  (
 	// Build up queue
 	name: \buildUp,
