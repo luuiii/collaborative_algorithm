@@ -3,12 +3,14 @@
 ### Jia & Shuoxin & Song - created @ 2020.11.16
 
 dates:
-- ~~Deadline of application for IMWI-concert:2020.11.30~~
+- [Ambient Festival](https://ambient-festival.com/ensemble/) @ cologne st.michael - 2021.09.09 - CEST 23:00
+- [Der dritte Körper](https://third.notimportant.org) @ cologne st.michael - 2021.08.31 - CEST 22:00
+- [algopolis live Ljudmila](https://wiki.ljudmila.org/Algopolis_live) @ ljubljana - 2021.05.14 - CEST 22:10
+- escdotdot presents [ _  _  _ ] - [collaborative algorithmic music performance](https://ava.hkbu.edu.hk/en/events/___)  @ HK - 2021.03.14 - HKT 19:00
+- [TOPLAP Live Stream](https://transnodal.toplap.org/) - 19.Feb.2021 - CET 21:00
 - ~~IMWI-concert: 2021.01.29~~ canceled
-- [TOPLAP Live Stream](https://transnodal.toplap.org/) - 19.Feb.2021 - CET 21:00 - 01:00
-- escdotdot presents [ _  _  _ ] - [collaborative algorithmic music performance](https://ava.hkbu.edu.hk/en/events/___)  @ HK - 14.Mar.2021 - HKT 19:00 - 20:00
-- [algopolis live Ljudmila](https://wiki.ljudmila.org/Algopolis_live) @ ljubljana - 14.May.2021 - CEST 22:10 - 22:30
-- kelong concert @ cologne - August 2021
+- ~~Deadline of application for IMWI-concert:2020.11.30~~
+
 
 #### Questions:
 - Algorithm in context of Network Music: how could Algorithm be collaborative and distributed?
