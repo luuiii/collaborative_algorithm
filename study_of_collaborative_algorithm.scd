@@ -15,6 +15,7 @@ n = NetAddr("127.0.0.1", 57140);
 // Jia - 0
 // Song - 1
 // Shuoxin - 2
+~state = State.new(n);
 ~id = 1;
 ~userNameList = [
 	"jia",
@@ -224,6 +225,8 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 	// When it's offline and it's not for you. We do nothing
 	var respondToEvent = ~responseToEventForLoc.(from);
 	var panFunc = ~getPanFunc.value();
+	var pitchScale = ~state.getVal(queueName, \pitch);
+
 	switch(queueName,
 		\buildUp, {
 			~checkPartial.value();
@@ -235,7 +238,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 
 				Synth(\noise, [
 					\amp, 0.25,
-					\freq, freqs[to],
+					\freq, freqs[to] * pitchScale,
 					\rq, 0.5,
 					\pan, panFunc.value(from),
 					\dur, waitTime.value() * 0.4,
@@ -246,8 +249,11 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 		}, {
 			if(respondToEvent, {
 				var freqs = [400, 600, 900];
+
 				Synth(\gai_id, [
-					\freq, freqs[to] * waitTime.value().linexp(0, 19, 8, 0.00000001),
+					\freq, freqs[to] * waitTime.value().linexp(
+						0, 19, 8 * pitchScale, 0.00000001
+					),
 					\pan, panFunc.value(from),
 					\dur, waitTime.value() * 0.5,
 					\attack, attack ? 0.1,
@@ -326,6 +332,12 @@ OSCdef(\braid_kill, {|msg|
 	~killBraid.();
 }, \braid_kill);
 
+OSCdef(\update_state, {|msg|
+	var chain = msg[1].asSymbol;
+	var key = msg[2].asSymbol;
+	var val = msg[3];
+	~state.setVal(chain, key, val);
+}, \update_state);
 
 // Chat OSCDef
 OSCdef(\chat, {|msg|
@@ -384,6 +396,7 @@ OSCdef(\syncConfigs, {|msg|
 	~userChainVisualConfigs[userId] = config;
 }, \syncConfigs);
 
+
 ~syncChainConfigs = {
 	n.sendMsg(
 		'/syncConfigs',
@@ -424,10 +437,15 @@ OSCdef(\syncConfigs, {|msg|
 			~histo[config.name] = (~histo[config.name]?[]).insert(0, [from, receiver]);
 			// (config.name.asString++":"++~histogram.value(config.name)).postln;
 
+			~state.recordPassing(config.name.asSymbol);
 			~play_message.(
 				config.name.asSymbol, from, receiver, lastWaitTime,
 				attack, sustain
 			);
+
+			"============".postln;
+			~state.postln;
+			"============".postln;
 
 			if(toRespond,
 				{
