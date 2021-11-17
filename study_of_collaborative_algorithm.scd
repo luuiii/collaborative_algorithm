@@ -9,6 +9,7 @@
 
 //to-do: maybe play a bit with sound
 
+
 (
 n = NetAddr("127.0.0.1", 57140);
 // The performer's ID
@@ -24,6 +25,41 @@ n = NetAddr("127.0.0.1", 57140);
 	"edward",
 ];
 ~userList = [0, 1, 2];
+
+// Buffers
+Buffer.clear;
+~audioFiles = "/Volumes/GoogleDrive/*/*/Musikfonds/audio/*".pathMatch;
+~parseTagsFromPath = {|path|
+	var file, ext, chunks;
+	#file, ext = path.splitext;
+	chunks = file.split($-);
+	chunks[2].split($|);
+};
+
+~loadFiles = {|filePaths|
+	var buffers = [];
+	var buffersMap = IdentityDictionary.new();
+
+	filePaths.collect{ |path|
+		// 00-20211011-karlsruhe|announcment.wav
+		var tags = ~parseTagsFromPath.(path);
+		var buffer = Buffer.read(s, path);
+		buffers.add(buffer);
+
+		tags.do {|tag|
+			var tagSymbol = tag.asSymbol;
+			buffersMap[tagSymbol] = (buffersMap[tagSymbol] ? [] ) ++ [buffer];
+		}
+	};
+	[buffers, buffersMap];
+};
+~loadedContent = ~loadFiles.(~audioFiles);
+~buffers = ~loadedContent[0];
+~buffersMap = ~loadedContent[1];
+
+~buffersMap.keys().do{|key|
+	(key ++ " length: " ++ ~buffersMap[key].size).postln;
+};
 
 // To read the offline mode from config, if it's not there
 ~offlinePerformance = if(~offlinePerformance.isNil, false, ~offlinePerformance);
@@ -195,6 +231,19 @@ SynthDef(\gai_id,{|
 	Out.ar(0,sig)
 }).add;
 
+SynthDef(\playbuf, {|out=0, pan=0, dur=20, rate=1.0, attack=0.03, release=0.06, amp=1.0, bufnum|
+	var env, envgen, sig;
+	sig = PlayBuf.ar(2, bufnum, rate: BufRateScale.kr(bufnum) * rate, startPos:0, loop: 0, doneAction: Done.freeSelf);
+	env = Env.new(
+		[0, 1,  1,  0],
+		[attack, 1-attack-release, release],
+		[-2, 0, 4]
+	);
+	envgen = EnvGen.kr(env, doneAction: Done.freeSelf, timeScale: dur);
+	sig = sig*envgen*amp;
+	Out.ar(out, sig);
+}).add;
+
 SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 0.998, pan=0|
 	var in = GrayNoise.ar(1);
 	var sig = BPF.ar(in, freq, rq);
@@ -231,6 +280,18 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 		\buildUp, {
 			~checkPartial.value();
 			~addPartial.value(genSound: respondToEvent);
+		},
+		\sample, {
+			if(respondToEvent, {
+				Synth(\playbuf, [
+					\amp, 0.5,
+					\bufnum, ~buffersMap[\announcement].choose,
+					\rate, 1,
+					\dur, waitTime.value() * 5,
+					\attack, attack ? 0.5,
+					\sustain, sustain ? 0.998,
+				]);
+			})
 		},
 		\noise, {
 			if(respondToEvent, {

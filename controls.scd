@@ -34,6 +34,12 @@
 	name: \buildUp,
 	waitTime: {10.rand},
 	nextTarget: {[nil].choose}
+), (
+	name: \sample,
+	waitTime: {3},
+	nextTarget: {[1].choose},
+	attack: {0.00001},
+	sustain: {1}
 )
 ];
 
@@ -97,4 +103,11 @@ n.sendMsg('/noise', to, ~id, 0.1);
 var to = ~userList.reject(_==~id).choose;
 to.postln;
 n.sendMsg('/buildUp', 0, ~id, 0.1);
+)
+
+(
+// Start sample chain
+var to = ~userList.reject(_==~id).choose;
+to.postln;
+n.sendMsg('/sample', 1, ~id, 0.1);
 )
