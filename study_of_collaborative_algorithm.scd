@@ -28,7 +28,7 @@ n = NetAddr("127.0.0.1", 57140);
 
 // Buffers
 Buffer.clear;
-~audioFiles = "/Volumes/GoogleDrive/*/*/Musikfonds/audio/*".pathMatch;
+~audioFiles = "/Volumes/GoogleDrive/*/*/Musikfonds/audio/*.wav".pathMatch;
 ~parseTagsFromPath = {|path|
 	var file, ext, chunks;
 	#file, ext = path.splitext;
