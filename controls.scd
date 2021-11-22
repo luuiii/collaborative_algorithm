@@ -36,7 +36,7 @@
 	nextTarget: {[nil].choose}
 ), (
 	name: \sample,
-	waitTime: {3},
+	waitTime: {10},
 	nextTarget: {[1].choose},
 	attack: {0.00001},
 	sustain: {1}
@@ -110,4 +110,15 @@ n.sendMsg('/buildUp', 0, ~id, 0.1);
 var to = ~userList.reject(_==~id).choose;
 to.postln;
 n.sendMsg('/sample', 1, ~id, 0.1);
+)
+
+
+(
+// Set sample features
+~state.setVal(\sample, \features, [\signal]);
+)
+
+(
+// Set sample durtion scale
+~state.setVal(\sample, \dur, 1);
 )

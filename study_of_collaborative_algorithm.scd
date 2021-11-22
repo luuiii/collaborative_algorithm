@@ -231,16 +231,22 @@ SynthDef(\gai_id,{|
 	Out.ar(0,sig)
 }).add;
 
-SynthDef(\playbuf, {|out=0, pan=0, dur=20, rate=1.0, attack=0.03, release=0.06, amp=1.0, bufnum|
-	var env, envgen, sig;
-	sig = PlayBuf.ar(2, bufnum, rate: BufRateScale.kr(bufnum) * rate, startPos:0, loop: 0, doneAction: Done.freeSelf);
-	env = Env.new(
-		[0, 1,  1,  0],
-		[attack, 1-attack-release, release],
-		[-2, 0, 4]
+SynthDef(\playbuf, {|out=0, pan=0, dur=20, rate=1.0, attack=0.03, sustain=0.06, amp=1.0, startPos=0, bufnum|
+	var env, sig;
+	sig = PlayBuf.ar(
+		2, bufnum, rate: BufRateScale.kr(bufnum) * rate,
+		startPos: BufFrames.ir(bufnum) * startPos,
+		loop: 0, doneAction: Done.freeSelf);
+	env = EnvGen.kr(
+		Env([0, 1, 1, 0], [
+			(1 - sustain) * attack,
+			sustain,
+			(1 - sustain) * (1 - attack)
+		]),
+		doneAction: 2,
+		timeScale: dur
 	);
-	envgen = EnvGen.kr(env, doneAction: Done.freeSelf, timeScale: dur);
-	sig = sig*envgen*amp;
+	sig = sig*env*amp;
 	Out.ar(out, sig);
 }).add;
 
@@ -275,6 +281,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 	var respondToEvent = ~responseToEventForLoc.(from);
 	var panFunc = ~getPanFunc.value();
 	var pitchScale = ~state.getVal(queueName, \pitch);
+	var durScale = ~state.getVal(queueName, \dur) ? 0.5;
 
 	switch(queueName,
 		\buildUp, {
@@ -282,13 +289,20 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 			~addPartial.value(genSound: respondToEvent);
 		},
 		\sample, {
+			var features = ~state.getVal(\sample, \features);
+			var buffers = if(features.isNil, {
+				~buffers;
+			}, {
+				features.collect({|feature| ~buffersMap[feature]}).flat;
+			});
 			if(respondToEvent, {
 				Synth(\playbuf, [
 					\amp, 0.5,
-					\bufnum, ~buffersMap[\announcement].choose,
+					\bufnum, buffers.choose,
 					\rate, 1,
-					\dur, waitTime.value() * 5,
-					\attack, attack ? 0.5,
+					\startPos, 0,
+					\dur, waitTime.value() * durScale,
+					\attack, attack ? 0.02,
 					\sustain, sustain ? 0.998,
 				]);
 			})
