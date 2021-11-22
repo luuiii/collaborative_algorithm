@@ -109,13 +109,13 @@ n.sendMsg('/buildUp', 0, ~id, 0.1);
 // Start sample chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/sample', 1, ~id, 0.1);
+n.sendMsg('/sample', 1, 1, 0.1);
 )
 
 
 (
 // Set sample features
-~state.setVal(\sample, \features, nil);
+~state.setVal(\sample, \features, [\signal]);
 )
 
 (

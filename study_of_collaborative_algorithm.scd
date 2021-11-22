@@ -41,7 +41,7 @@ Buffer.clear;
 	var buffers = [];
 	var buffersMap = IdentityDictionary.new();
 
-	filePaths.collect{ |path|
+	filePaths.collect{ |path, index|
 		// 00-20211011-karlsruhe|announcment.wav
 		var tags = ~parseTagsFromPath.(path);
 		var buffer = Buffer.read(s, path);
@@ -49,11 +49,12 @@ Buffer.clear;
 
 		tags.do {|tag|
 			var tagSymbol = tag.asSymbol;
-			buffersMap[tagSymbol] = (buffersMap[tagSymbol] ? [] ) ++ [buffer];
+			buffersMap[tagSymbol] = (buffersMap[tagSymbol] ? [] ) ++ [index];
 		}
 	};
 	[buffers, buffersMap];
 };
+
 ~loadedContent = ~loadFiles.(~audioFiles);
 ~buffers = ~loadedContent[0];
 ~buffersMap = ~loadedContent[1];
@@ -278,24 +279,25 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 };
 
 
+
 ~getBufferByFeatures = {
 	var features = ~state.getVal(\sample, \features);
-	var buffers = if(features.isNil, {
-		 	~buffers;
-		}, {
-			features.collect({|feature| ~buffersMap[feature]}).flat;
-	});
 
-	buffers.choose;
+	if(features.isNil, {
+		 	~buffers.size.rand;
+		}, {
+			features.collect({|feature| ~buffersMap[feature]}).flat.choose;
+	});
 };
 
 
-~play_message = {|queueName, from, to, waitTime, attack, sustain, bufnum|
+~play_message = {|queueName, from, to, waitTime, attack, sustain, bufindex|
 	// When it's offline and it's not for you. We do nothing
 	var respondToEvent = ~responseToEventForLoc.(from);
 	var panFunc = ~getPanFunc.value();
 	var pitchScale = ~state.getVal(queueName, \pitch);
 	var durScale = ~state.getVal(queueName, \dur) ? 1;
+	("received bufindex " ++ bufindex).postln;
 
 	switch(queueName,
 		\buildUp, {
@@ -303,10 +305,10 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 			~addPartial.value(genSound: respondToEvent);
 		},
 		\sample, {
-			if(respondToEvent, {
+			if(respondToEvent && bufindex.isNil.not, {
 				Synth(\playbuf, [
 					\amp, 0.5,
-					\bufnum, bufnum,
+					\bufnum, ~buffers[bufindex],
 					\rate, 1,
 					\startPos, 0,
 					\dur, waitTime.value() * durScale,
@@ -512,7 +514,7 @@ OSCdef(\syncConfigs, {|msg|
 			var lastWaitTime = msg[3];
 			var attack = msg[4];
 			var sustain = msg[5];
-			var sampleBufnum = msg[6];
+			var sampleBufindex = msg[6];
 			var toRespond = ~isSelfChecker.(receiver);
 
 			// "whether to response?".postln;
@@ -525,7 +527,7 @@ OSCdef(\syncConfigs, {|msg|
 
 			~play_message.(
 				config.name.asSymbol, from, receiver, lastWaitTime,
-				attack, sustain, sampleBufnum
+				attack, sustain, sampleBufindex
 			);
 
 			"============".postln;
@@ -556,7 +558,7 @@ OSCdef(\syncConfigs, {|msg|
 									config.name, nextTarget, ~id, waitTime,
 									attackFn.value(),
 									sustainFn.value(),
-									~getBufferByFeatures.value().bufnum
+									~getBufferByFeatures.value()
 								);
 							}, {
 								n.sendMsg(
