@@ -36,6 +36,7 @@ Buffer.clear;
 	chunks[2].split($|);
 };
 
+
 ~loadFiles = {|filePaths|
 	var buffers = [];
 	var buffersMap = IdentityDictionary.new();
@@ -44,7 +45,7 @@ Buffer.clear;
 		// 00-20211011-karlsruhe|announcment.wav
 		var tags = ~parseTagsFromPath.(path);
 		var buffer = Buffer.read(s, path);
-		buffers.add(buffer);
+		buffers = buffers ++ buffer;
 
 		tags.do {|tag|
 			var tagSymbol = tag.asSymbol;
@@ -276,12 +277,25 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 	~offlinePerformance.not || (~isSelfChecker.value(loc));
 };
 
-~play_message = {|queueName, from, to, waitTime, attack, sustain|
+
+~getBufferByFeatures = {
+	var features = ~state.getVal(\sample, \features);
+	var buffers = if(features.isNil, {
+		 	~buffers;
+		}, {
+			features.collect({|feature| ~buffersMap[feature]}).flat;
+	});
+
+	buffers.choose;
+};
+
+
+~play_message = {|queueName, from, to, waitTime, attack, sustain, bufnum|
 	// When it's offline and it's not for you. We do nothing
 	var respondToEvent = ~responseToEventForLoc.(from);
 	var panFunc = ~getPanFunc.value();
 	var pitchScale = ~state.getVal(queueName, \pitch);
-	var durScale = ~state.getVal(queueName, \dur) ? 0.5;
+	var durScale = ~state.getVal(queueName, \dur) ? 1;
 
 	switch(queueName,
 		\buildUp, {
@@ -289,16 +303,10 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 			~addPartial.value(genSound: respondToEvent);
 		},
 		\sample, {
-			var features = ~state.getVal(\sample, \features);
-			var buffers = if(features.isNil, {
-				~buffers;
-			}, {
-				features.collect({|feature| ~buffersMap[feature]}).flat;
-			});
 			if(respondToEvent, {
 				Synth(\playbuf, [
 					\amp, 0.5,
-					\bufnum, buffers.choose,
+					\bufnum, bufnum,
 					\rate, 1,
 					\startPos, 0,
 					\dur, waitTime.value() * durScale,
@@ -504,6 +512,7 @@ OSCdef(\syncConfigs, {|msg|
 			var lastWaitTime = msg[3];
 			var attack = msg[4];
 			var sustain = msg[5];
+			var sampleBufnum = msg[6];
 			var toRespond = ~isSelfChecker.(receiver);
 
 			// "whether to response?".postln;
@@ -513,9 +522,10 @@ OSCdef(\syncConfigs, {|msg|
 			// (config.name.asString++":"++~histogram.value(config.name)).postln;
 
 			~state.recordPassing(config.name.asSymbol);
+
 			~play_message.(
 				config.name.asSymbol, from, receiver, lastWaitTime,
-				attack, sustain
+				attack, sustain, sampleBufnum
 			);
 
 			"============".postln;
@@ -541,11 +551,21 @@ OSCdef(\syncConfigs, {|msg|
 							(config.name +" sending nil, stopped").postln;
 						}, {
 							// (receiver +" sending next message to " ++ nextTarget.asString).postln;
-							n.sendMsg(
-								config.name, nextTarget, ~id, waitTime,
-								attackFn.value(),
-								sustainFn.value()
-							);
+							if (config.name==\sample, {
+								n.sendMsg(
+									config.name, nextTarget, ~id, waitTime,
+									attackFn.value(),
+									sustainFn.value(),
+									~getBufferByFeatures.value().bufnum
+								);
+							}, {
+								n.sendMsg(
+									config.name, nextTarget, ~id, waitTime,
+									attackFn.value(),
+									sustainFn.value())
+
+							})
+
 						});
 				}.fork;},{
 					//else?

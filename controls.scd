@@ -19,7 +19,7 @@
 	// sine sound
 	name: \sine,
 	waitTime: {1},
-	nextTarget: {[1].choose},
+	nextTarget: {[0, 2].choose},
 	attack: {0.00001},
 	sustain: {1}
 ), (
@@ -36,10 +36,10 @@
 	nextTarget: {[nil].choose}
 ), (
 	name: \sample,
-	waitTime: {10},
+	waitTime: {4},
 	nextTarget: {[1].choose},
-	attack: {0.00001},
-	sustain: {1}
+	attack: {0.2},
+	sustain: {0.5}
 )
 ];
 
@@ -80,7 +80,7 @@ n.sendMsg('/\build_up_partial_amp_multiplier', 0.6);
 
 //////////////////////////////////////////chat
 
-n.sendMsg('/chat', ~id, "chin burger");
+n.sendMsg('/chat', ~id, "chin burger 11");
 
 // **** Kick off the chain
 (
@@ -115,10 +115,10 @@ n.sendMsg('/sample', 1, ~id, 0.1);
 
 (
 // Set sample features
-~state.setVal(\sample, \features, [\signal]);
+~state.setVal(\sample, \features, nil);
 )
 
 (
 // Set sample durtion scale
-~state.setVal(\sample, \dur, 1);
+~state.setVal(\sample, \dur, 1.2);
 )
