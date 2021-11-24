@@ -233,6 +233,25 @@ SynthDef(\gai_id,{|
 	Out.ar(0,sig)
 }).add;
 
+SynthDef(\playbufFull, {|out=0, pan=0, rate=1.0, attack=0.03, sustain=0.06, amp=1.0, startPos=0, bufnum|
+	var env, sig;
+	sig = PlayBuf.ar(
+		2, bufnum, rate: BufRateScale.kr(bufnum) * rate,
+		startPos: BufFrames.ir(bufnum) * startPos,
+		loop: 0, doneAction: Done.freeSelf);
+	env = EnvGen.kr(
+		Env([0, 1, 1, 0], [
+			(1 - sustain) * attack,
+			sustain,
+			(1 - sustain) * (1 - attack)
+		]),
+		doneAction: 2,
+		timeScale: BufDur.kr(bufnum) * (1 / rate),
+	);
+	sig = sig*env*amp;
+	Out.ar(out, sig);
+}).add;
+
 SynthDef(\playbuf, {|out=0, pan=0, dur=20, rate=1.0, attack=0.03, sustain=0.06, amp=1.0, startPos=0, bufnum|
 	var env, sig;
 	sig = PlayBuf.ar(
@@ -279,15 +298,20 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 };
 
 
+// ~getBufferByFeaturesState = {
+// 	var features = ~state.getVal(\sample, \features);
+//
+// 	if(features.isNil, {
+// 		~buffers.size.rand;
+// 		}, {
+// 			features.collect({|feature| ~buffersMap[feature]}).flat.choose;
+// 	});
+// };
 
-~getBufferByFeatures = {
-	var features = ~state.getVal(\sample, \features);
 
-	if(features.isNil, {
-		 	~buffers.size.rand;
-		}, {
-			features.collect({|feature| ~buffersMap[feature]}).flat.choose;
-	});
+~getBufferByFeature = {|feature|
+	var selectedSample = ~buffersMap[feature];
+	if (selectedSample.size > 0,{ selectedSample.choose}, {nil});
 };
 
 
@@ -307,11 +331,23 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 		\sample, {
 			if(respondToEvent && bufindex.isNil.not, {
 				Synth(\playbuf, [
-					\amp, 0.5,
+					\amp, 0.3,
 					\bufnum, ~buffers[bufindex],
 					\rate, 1,
 					\startPos, 0,
 					\dur, waitTime.value() * durScale,
+					\attack, attack ? 0.02,
+					\sustain, sustain ? 0.998,
+				]);
+			})
+		},
+		\sampleFull, {
+			if(respondToEvent && bufindex.isNil.not, {
+				Synth(\playbufFull, [
+					\amp, 0.3,
+					\bufnum, ~buffers[bufindex],
+					\rate, 1,
+					\startPos, 0,
 					\attack, attack ? 0.02,
 					\sustain, sustain ? 0.998,
 				]);
@@ -496,6 +532,7 @@ OSCdef(\syncConfigs, {|msg|
 		// Function will stay the same
 		var waitTimeFn = config['waitTime'].asStream;
 		var nextTargetFn = config['nextTarget'].asStream;
+		var featureFn = config['feature'].asStream;
 
 		var attackFn = config['attack'].asStream;
 		var sustainFn = config['sustain'].asStream;
@@ -506,6 +543,10 @@ OSCdef(\syncConfigs, {|msg|
 
 		if(config['nextTarget'].asStream.value().isArray, {
 			Error("Chain %s can't return an array for nextTarget".format(config.name.asSymbol)).throw;
+		});
+
+		if(config['feature'].asStream.value().isArray, {
+			Error("Chain %s can't return an array for feature".format(config.name.asSymbol)).throw;
 		});
 
 		OSCdef(config.name.asSymbol, {|msg|
@@ -530,15 +571,16 @@ OSCdef(\syncConfigs, {|msg|
 				attack, sustain, sampleBufindex
 			);
 
-			"============".postln;
-			~state.postln;
-			"============".postln;
+			// "============".postln;
+			// ~state.postln;
+			// "============".postln;
 
 			if(toRespond,
 				{
 					{
 						var nextTarget = nextTargetFn.value();
 						var waitTime = waitTimeFn.value();
+						var selectedFeature = featureFn.value();
 
 						// Debug logging
 						// ("***********").postln;
@@ -553,20 +595,12 @@ OSCdef(\syncConfigs, {|msg|
 							(config.name +" sending nil, stopped").postln;
 						}, {
 							// (receiver +" sending next message to " ++ nextTarget.asString).postln;
-							if (config.name==\sample, {
-								n.sendMsg(
-									config.name, nextTarget, ~id, waitTime,
-									attackFn.value(),
-									sustainFn.value(),
-									~getBufferByFeatures.value()
-								);
-							}, {
-								n.sendMsg(
-									config.name, nextTarget, ~id, waitTime,
-									attackFn.value(),
-									sustainFn.value())
-
-							})
+							n.sendMsg(
+								config.name, nextTarget, ~id, waitTime,
+								attackFn.value(),
+								sustainFn.value(),
+								~getBufferByFeature.value(selectedFeature)
+							);
 
 						});
 				}.fork;},{

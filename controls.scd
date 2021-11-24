@@ -18,17 +18,17 @@
 ~configs = [(
 	// sine sound
 	name: \sine,
-	waitTime: {1},
-	nextTarget: {[0, 2].choose},
-	attack: {0.00001},
-	sustain: {1}
+	waitTime: {rrand(2, 5)},
+	nextTarget: {[1].choose},
+	attack: {0.5},
+	sustain: {0.2}
 ), (
 	// noise sound
 	name: \noise,
-	waitTime: {0.00001},
-	nextTarget: {[1].choose},
+	waitTime: {2},
+	nextTarget: {[0, 1].choose},
 	attack: {0.00001},
-	sustain: {1}
+	sustain: {0.2}
 ),  (
 	// Build up queue
 	name: \buildUp,
@@ -36,10 +36,18 @@
 	nextTarget: {[nil].choose}
 ), (
 	name: \sample,
-	waitTime: {4},
+	feature: Pseq([\telephone, \signal], inf),
+	waitTime: Pseq([4, 4], inf),
 	nextTarget: {[1].choose},
 	attack: {0.2},
-	sustain: {0.5}
+	sustain: {0.9}
+), (
+	name: \sampleFull,
+	feature: Pseq([\london], inf),
+	waitTime: Pseq([4], inf),
+	nextTarget: {[1].choose},
+	attack: {0.2},
+	sustain: {0.9}
 )
 ];
 
@@ -80,7 +88,7 @@ n.sendMsg('/\build_up_partial_amp_multiplier', 0.6);
 
 //////////////////////////////////////////chat
 
-n.sendMsg('/chat', ~id, "chin burger 11");
+n.sendMsg('/chat', ~id, "chin burger");
 
 // **** Kick off the chain
 (
@@ -102,23 +110,24 @@ n.sendMsg('/noise', to, ~id, 0.1);
 // Start the buildUp queue
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/buildUp', 0, ~id, 0.1);
+n.sendMsg('/buildUp', to, ~id, 0.1);
 )
 
 (
-// Start sample chain
+// Start sample full chain(always play the full duration)
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/sample', 1, 1, 0.1);
+n.sendMsg('/sampleFull', 1, 1, 0.1);
 )
 
 
-(
-// Set sample features
-~state.setVal(\sample, \features, [\signal]);
-)
+// TBD
+// (
+// // Set sample features
+// ~state.setVal(\sample, \features, [\train_departing]);
+// )
 
 (
 // Set sample durtion scale
-~state.setVal(\sample, \dur, 1.2);
+~state.setVal(\sample, \dur, 2);
 )
