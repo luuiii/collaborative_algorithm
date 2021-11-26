@@ -1,38 +1,40 @@
-\cologne  2
-\open_close  2
-\checkout  3
-\departing  5
-\tram  10
-\friction  2
-\left  1
-\crow  1
-\passing  2
-\telephone  3
-\bird  1
 \london  2
-\church  3
-\announcement  5
-\siren  3
 \karlsruhe  25
-\koeln_hbf  1
+\cologne  5
+
+\departing  6
+\arriving  5
+\passing  2
+
+\tram  10
 \train  5
-\signal  9
-\muelheim  2
-\key  3
-\mono  1
-\traffic  1
-\acoustic_traffic_signal  6
-\bell  5
-\arriving  4
-\close  4
-\doppler  1
-\loud  2
-\short  1
-\ehrenfeld  3
-\RB27  1
-\mailbox  2
 \car  1
-\open  2
-\RE1  1
+
+\signal  9
+\checkout  3
+
+\acoustic_traffic_signal  6
+\traffic  1
+\crow  1
+
+\telephone  3
+\bell  5
+\siren  3
+
 \door  7
+\key  3
+\mailbox  2
+\open  2
+\close  4
+\open_close  2
+\bird  1
+
+\friction  2
+
+\church  3
+\doppler  1
+\mono  1
+\loud  2
 \hallo  1
+\left  1
+\short  1
