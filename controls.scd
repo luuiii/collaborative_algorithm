@@ -114,20 +114,23 @@ n.sendMsg('/buildUp', to, ~id, 0.1);
 )
 
 (
-// Start sample full chain(always play the full duration)
+// Start sample chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/sampleFull', 1, 1, 0.1);
+n.sendMsg('/sample', to, ~id, 0.1);
 )
 
 
-// TBD
-// (
-// // Set sample features
-// ~state.setVal(\sample, \features, [\train_departing]);
-// )
+(
+// Start sample full chain(always play the full duration)
+var to = ~userList.reject(_==~id).choose;
+to.postln;
+n.sendMsg('/sampleFull', to, ~id, 0.1);
+)
+
 
 (
 // Set sample durtion scale
-~state.setVal(\sample, \dur, 2);
+// 1 means same duration as waitTime
+~state.setVal(\sample, \dur, 1.1);
 )
