@@ -197,6 +197,7 @@ SynthDef(\sine, {|freq=440, amp=0.12, pan = 0, attack = 1, gate = 1|
 
 
 SynthDef(\braid, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1, freqBus = 0, release=10|
+
 	var detectedFreq, hasFreq;
 	var lagFreq = freq.lag(10);
 	var sig = SinOsc.ar(lagFreq);
