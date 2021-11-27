@@ -17,7 +17,7 @@ n = NetAddr("127.0.0.1", 57140);
 // Song - 1
 // Shuoxin - 2
 ~state = State.new(n);
-~id = 1;
+~id = 0;
 ~userNameList = [
 	"jia",
 	"song",
@@ -196,7 +196,7 @@ SynthDef(\sine, {|freq=440, amp=0.12, pan = 0, attack = 1, gate = 1|
 }).add;
 
 
-SynthDef(\braid, {|freq=440, amp=0.12, pan = 0, attack = 1, gate = 1, freqBus = 0, release=10|
+SynthDef(\braid, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1, freqBus = 0, release=10|
 	var detectedFreq, hasFreq;
 	var lagFreq = freq.lag(10);
 	var sig = SinOsc.ar(lagFreq);
@@ -387,7 +387,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 
 
 // Braid configs
-~freqList = [5000, 5000, 5000];
+~freqList = [110, 110, 110];
 ~maxDiff = 100;
 ~braidBus = Bus.new(\control, 0, ~userList.size);
 
