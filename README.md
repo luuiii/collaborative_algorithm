@@ -3,7 +3,7 @@
 ### Jia & Shuoxin & Song - created @ 2020.11.16
 
 dates:
-- [HKCR](https://www.mixcloud.com/HKCR/) @ Hong Kong - 2021.11.30 - CET 14:00 / HKT 21:00
+- [HKCR](https://route.notimportant.org) @ Hong Kong - 2021.11.30 - CET 14:00 / HKT 21:00
 - [Ambient Festival](https://ambient-festival.com/ensemble/) @ cologne st.michael - 2021.09.09 - CEST 23:00
 - [Der dritte Körper](https://third.notimportant.org) @ cologne st.michael - 2021.08.31 - CEST 22:00
 - [algopolis live Ljudmila](https://wiki.ljudmila.org/Algopolis_live) @ ljubljana - 2021.05.14 - CEST 22:10
