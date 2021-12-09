@@ -181,7 +181,7 @@ Buffer.clear;
 
 ~updateSectionDisplayState = {|chain, part, val|
 	~checkSectionPart.value(part);
-	~state.setVal(chain, part, val);
+	~state.update(chain, part, val);
 };
 
 

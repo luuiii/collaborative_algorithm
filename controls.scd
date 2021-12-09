@@ -132,7 +132,7 @@ n.sendMsg('/sampleFull', to, ~id, 0.1);
 (
 // Set sample durtion scale
 // 1 means same duration as waitTime
-~state.setVal(\sample, \dur, 1.1);
+~state.update(\sample, \dur, 1.1);
 )
 
 // Control display of current Target (0, 1, 2 number )
