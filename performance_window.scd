@@ -38,6 +38,22 @@ var drawWidth = 0.1;
 var chatTextField;
 var chatSentencesCount = 7;
 
+var colorboxW = [Color.black, Color.white];
+var colorboxG = [Color.black, Color.grey];
+var colorboxR = [Color.black, Color.fromHexString("E93000")];
+
+var switchSineCurrentTarget = 0;
+var switchSineAlgo = 0;
+var switchNoiseCurrentTarget = 1;
+var switchNoiseAlgo = 1;
+var switchBuildUpCurrentTarget = 1;
+var switchBuildUpAlgo = 1;
+var switchSampleCurrentTarget = 1;
+var switchSampleUpAlgo = 1;
+var switchSampleFullCurrentTarget = 1;
+var switchSampleFullUpAlgo = 1;
+
+
 
 // Get the display value for the chain and a key
 // for example: getValuesForKey.(\noise, \waitTime)
@@ -79,16 +95,22 @@ w.front;
 r = {
 	inf.do { |i|
 		{
-			current_message[..5].do{|item, index|
-				item.string_(show.((~histogram.([\sine, \noise, \buildUp][index/3.floor.asInteger])?"")[index%3]));
+			current_message[..2].do{|item, index|
+				item.string_(show.((~histogram.([\sine, \noise][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchSineCurrentTarget]);
+			};
+			current_message[3..5].do{|item, index|
+				item.string_(show.((~histogram.([\sine, \noise][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchSineCurrentTarget]);
 			};
 
 			current_message[6..8].do{|item, index|
-				item.string_(show.(([0,1,2].includes((~histogram.(\buildUp)?"")[index%3])).if({~partialCount},{""})));
+				item.string_(show.(([0,1,2].includes((~histogram.(\buildUp)?"")[index%3])).if({~partialCount},{""}))).stringColor_(colorboxW[switchBuildUpCurrentTarget]);
 			};
 
-			current_message[9..14].do{|item, index|
-				item.string_(show.((~histogram.([\sample, \sampleFull][index/3.floor.asInteger])?"")[index%3]));
+			current_message[9..11].do{|item, index|
+				item.string_(show.((~histogram.([\sample][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchSampleCurrentTarget]);
+			};
+			current_message[12..14].do{|item, index|
+				item.string_(show.((~histogram.([\sampleFull][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchSampleFullCurrentTarget]);
 			};
 
 			waitTime_array.do{|item, index| item.string_(
