@@ -17,7 +17,7 @@ n = NetAddr("127.0.0.1", 57140);
 // Song - 1
 // Shuoxin - 2
 ~state = State.new(n);
-~id = 0;
+~id = 1;
 ~userNameList = [
 	"jia",
 	"song",
@@ -176,7 +176,7 @@ Buffer.clear;
 ~getSectionDisplayState = {|chain, part|
 	var toDisplay = ~state.getVal(chain, part);
 	~checkSectionPart.value(part);
-	toDisplay == true;
+	toDisplay == true || toDisplay == 1;
 };
 
 ~updateSectionDisplayState = {|chain, part, val|

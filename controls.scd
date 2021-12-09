@@ -138,11 +138,11 @@ n.sendMsg('/sampleFull', to, ~id, 0.1);
 // Control display of current Target (0, 1, 2 number )
 // chain, \currentTarget, boolean
 (
-~updateSectionDisplayState.value(\sine, \algo, true);
+~updateSectionDisplayState.value(\sine, \currentTarget, true);
 )
 
 // Control display of pattern(waitTime, nextTarget)
 // chain, \algo, boolean
 (
-~updateSectionDisplayState.value(\noise, \algo, true);
+~updateSectionDisplayState.value(\sine, \algo, true);
 )
