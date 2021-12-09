@@ -166,6 +166,25 @@ Buffer.clear;
 };
 
 
+// display utility function for performance windows
+~checkSectionPart = {|part|
+	if([\currentTarget, \algo].includes(part).not, {
+		Error("Section part %s is invalid".format(part)).throw;
+	});
+};
+
+~getSectionDisplayState = {|chain, part|
+	var toDisplay = ~state.getVal(chain, part);
+	~checkSectionPart.value(part);
+	toDisplay == true;
+};
+
+~updateSectionDisplayState = {|chain, part, val|
+	~checkSectionPart.value(part);
+	~state.setVal(chain, part, val);
+};
+
+
 OSCdef(\build_up_kill, {|msg|
 	~sineGroup.set(\gate, 0);
 	~partialCount = 0;

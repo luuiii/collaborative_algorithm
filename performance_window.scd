@@ -38,22 +38,12 @@ var drawWidth = 0.1;
 var chatTextField;
 var chatSentencesCount = 7;
 
+var allChains = [\sine, \noise, \buildUp, \sample, \sampleFull];
+
+var chatStringColor = Color.gray(0.8);
 var colorboxW = [Color.black, Color.white];
-var colorboxG = [Color.black, Color.grey];
+var colorboxG = [Color.black,Color.gray(gray: 0.8)];
 var colorboxR = [Color.black, Color.fromHexString("E93000")];
-
-var switchSineCurrentTarget = 0;
-var switchSineAlgo = 0;
-var switchNoiseCurrentTarget = 1;
-var switchNoiseAlgo = 1;
-var switchBuildUpCurrentTarget = 1;
-var switchBuildUpAlgo = 1;
-var switchSampleCurrentTarget = 1;
-var switchSampleUpAlgo = 1;
-var switchSampleFullCurrentTarget = 1;
-var switchSampleFullUpAlgo = 1;
-
-
 
 // Get the display value for the chain and a key
 // for example: getValuesForKey.(\noise, \waitTime)
@@ -88,18 +78,29 @@ feature_array = Array.fill(15,{|i| StaticText.new(w, Rect([left, mid, right][i%3
 
 chatTextField = StaticText.new(
 	w, Rect(chat_indent, chat_posY, chatSectionWidth, height*0.395)
-).font_(Font("menlo", 12 * scale)).align_(\bottomLeft).stringColor_(Color.gray);
+).font_(Font("menlo", 12 * scale)).align_(\bottomLeft).stringColor_(chatStringColor);
 
 
 w.front;
 r = {
 	inf.do { |i|
 		{
+			var switchSineCurrentTarget = ~getSectionDisplayState.(\sine, \currentTarget).asInteger;
+			var switchSineAlgo = 0;
+			var switchNoiseCurrentTarget = ~getSectionDisplayState.(\noise, \currentTarget).asInteger;
+			var switchNoiseAlgo = 1;
+			var switchBuildUpCurrentTarget = ~getSectionDisplayState.(\buildUp, \currentTarget).asInteger;
+			var switchBuildUpAlgo = 1;
+			var switchSampleCurrentTarget = ~getSectionDisplayState.(\sample, \currentTarget).asInteger;
+			var switchSampleUpAlgo = 1;
+			var switchSampleFullCurrentTarget = ~getSectionDisplayState.(\sampleFull, \currentTarget).asInteger;
+			var switchSampleFullUpAlgo = 1;
+
 			current_message[..2].do{|item, index|
 				item.string_(show.((~histogram.([\sine, \noise][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchSineCurrentTarget]);
 			};
 			current_message[3..5].do{|item, index|
-				item.string_(show.((~histogram.([\sine, \noise][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchSineCurrentTarget]);
+				item.string_(show.((~histogram.([\sine, \noise][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchNoiseCurrentTarget]);
 			};
 
 			current_message[6..8].do{|item, index|
@@ -113,14 +114,37 @@ r = {
 				item.string_(show.((~histogram.([\sampleFull][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchSampleFullCurrentTarget]);
 			};
 
-			waitTime_array.do{|item, index| item.string_(
-				getValuesForKey.([\sine, \noise, \buildUp, \sample, \sampleFull][(index/3).floor.asInteger], \waitTime, index%3).join)};
+			waitTime_array.do{|item, index|
+				var chain = allChains[(index/3).floor.asInteger];
+				var displayAlgo = ~getSectionDisplayState.value(chain, \algo).asInteger;
 
-			target_array.do{|item, index| item.string_(
-				getValuesForKey.([\sine, \noise, \buildUp, \sample, \sampleFull][(index/3).floor.asInteger], \nextTarget, index%3).join)};
+				item.string_(
+					getValuesForKey.(chain, \waitTime, index%3).join
+				).stringColor_(
+					colorboxG[displayAlgo]
+				);
+			};
 
-			feature_array[9..14].do{|item, index| item.string_(
-				getValuesForKey.([\sample, \sampleFull][(index/3).floor.asInteger], \feature, index%3).join);
+			target_array.do{|item, index|
+				var chain = allChains[(index/3).floor.asInteger];
+				var displayAlgo = ~getSectionDisplayState.value(chain, \algo).asInteger;
+
+				item.string_(
+					getValuesForKey.(chain, \nextTarget, index%3).join
+				).stringColor_(
+					colorboxG[displayAlgo]
+				);
+			};
+
+			feature_array[9..14].do{|item, index|
+				var chain = [\sample, \sampleFull][(index/3).floor.asInteger];
+				var displayAlgo = ~getSectionDisplayState.value(chain, \algo).asInteger;
+
+				item.string_(
+					getValuesForKey.(chain, \feature, index%3).join
+				).stringColor_(
+					colorboxG[displayAlgo]
+				);
 			};
 
 			// join the line break with the first "chatSentencesCount" count of chat
