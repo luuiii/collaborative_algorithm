@@ -1,5 +1,5 @@
 (
-var scale = 1; //1.5 for full HD
+var scale = 1.5; //1.5 for full HD
 var width = 1280 * scale;
 var height = 720 * scale;
 
@@ -97,10 +97,10 @@ r = {
 			var switchSampleFullUpAlgo = 1;
 
 			current_message[..2].do{|item, index|
-				item.string_(show.((~histogram.([\sine, \noise][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchSineCurrentTarget]);
+				item.string_(show.((~histogram.([\sine][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchSineCurrentTarget]);
 			};
 			current_message[3..5].do{|item, index|
-				item.string_(show.((~histogram.([\sine, \noise][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchNoiseCurrentTarget]);
+				item.string_(show.((~histogram.([\noise][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchNoiseCurrentTarget]);
 			};
 
 			current_message[6..8].do{|item, index|
