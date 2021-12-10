@@ -104,7 +104,7 @@ r = {
 			};
 
 			current_message[6..8].do{|item, index|
-				item.string_(show.(([0,1,2].includes((~histogram.(\buildUp)?"")[index%3])).if({~partialCount},{""}))).stringColor_(colorboxW[switchBuildUpCurrentTarget]);
+				item.string_(show.(([0,1,2].includes((~histogram.(\buildUp)?"")[index%3])).if({~partialCount},{""}))).stringColor_(colorboxR[switchBuildUpCurrentTarget]);
 			};
 
 			current_message[9..11].do{|item, index|
