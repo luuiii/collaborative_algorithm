@@ -27,7 +27,7 @@ n = NetAddr("127.0.0.1", 57140);
 ~userList = [0, 1, 2];
 
 // Buffers
-Buffer.clear;
+Buffer.freeAll;
 ~audioFiles = "/Volumes/GoogleDrive/*/*/Musikfonds/audio/*.wav".pathMatch;
 ~parseTagsFromPath = {|path|
 	var file, ext, chunks;
@@ -50,8 +50,6 @@ Buffer.clear;
 		tags.do {|tag|
 			var tagSymbol = tag.asSymbol;
 			buffersMap[tagSymbol] = (buffersMap[tagSymbol] ? [] ) ++ [index];
-			// add index
-			buffersMap[index] = [index];
 		}
 	};
 	[buffers, buffersMap];
@@ -331,8 +329,15 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 // };
 
 ~getBufferByFeature = {|feature|
-	var selectedSample = ~buffersMap[feature];
-	if (selectedSample.size > 0,{ selectedSample.choose}, {nil});
+	if(feature.isInteger, {
+		if ((feature < ~buffers.size) && (feature > -1), {
+			feature
+		}, {nil});
+	}, {
+		var selectedSample;
+		selectedSample = ~buffersMap[feature];
+		if (selectedSample.size > 0,{ selectedSample.choose}, {nil});
+	})
 };
 
 ~play_message = {|queueName, from, to, waitTime, attack, sustain, bufindex|
