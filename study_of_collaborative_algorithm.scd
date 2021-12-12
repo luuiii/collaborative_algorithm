@@ -25,6 +25,7 @@ n = NetAddr("127.0.0.1", 57140);
 	"edward",
 ];
 ~userList = [0, 1, 2];
+~braidInitFreq = 110;
 
 // Buffers
 Buffer.freeAll;
@@ -226,7 +227,7 @@ SynthDef(\braid, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1, freqBus = 0
 		gate: gate,
 	);
 
-	#detectedFreq, hasFreq = Pitch.kr(sig, minFreq:40, maxFreq: 10500);
+	#detectedFreq, hasFreq = Pitch.kr(sig, initFreq: ~braidInitFreq, minFreq:40, maxFreq: 10500);
 	sig = Pan2.ar(sig, pan);
 	sig = sig*env*amp;
 
@@ -332,11 +333,17 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 	if(feature.isInteger, {
 		if ((feature < ~buffers.size) && (feature > -1), {
 			feature
-		}, {nil});
+		}, {
+			("Invalid feature '" ++ feature ++"' for sample").error;
+			nil
+		});
 	}, {
 		var selectedSample;
 		selectedSample = ~buffersMap[feature];
-		if (selectedSample.size > 0,{ selectedSample.choose}, {nil});
+		if (selectedSample.size > 0,{ selectedSample.choose}, {
+			("Invalid feature '" ++ feature ++"'for sample").error;
+			nil
+		});
 	})
 };
 
@@ -412,7 +419,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 
 
 // Braid configs
-~freqList = [110, 110, 110];
+~freqList = ~braidInitFreq.dup(~userList.size);
 ~maxDiff = 100;
 ~braidBus = Bus.new(\control, 0, ~userList.size);
 
