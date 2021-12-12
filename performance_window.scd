@@ -68,7 +68,7 @@ w = Window.new(name:"[ _  _  _ ]", bounds: Rect(0, 0, width, height), border:tru
 w.view.background = Color.black;
 
 current_message = Array.fill(15,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.75*box_width), 1.07*posY + ((i/3).floor*current_message_space), box_width, height)).font_(Font("Helvetica Neue",scale*32*[3,3,0.5,1,1][i/3],
-	[0,1,0,0,0][(i/3).floor.asInteger].asBoolean,[0,1,0,1,1][(i/3).floor.asInteger].asBoolean)).stringColor_([Color.white,Color.white,Color.fromHexString("E93000"),Color.white,Color.white][i/3]).align_(\left);});
+	[0,1,0,0,0][(i/3).floor.asInteger].asBoolean,[0,1,0,1,0][(i/3).floor.asInteger].asBoolean)).stringColor_([Color.white,Color.white,Color.fromHexString("E93000"),Color.white,Color.white][i/3]).align_([\left,\left,\left,\right,\right][i/3]);});
 
 waitTime_array = Array.fill(15,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + algo_space + ((i/3).floor*current_message_space), box_width, height)).font_(Font("menlo",11 * scale)).align_(\left).stringColor_(Color.gray)});
 
@@ -114,7 +114,7 @@ r = {
 				item.string_(show.((~histogram.([\sampleFull][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchSampleFullCurrentTarget]);
 			};
 
-			waitTime_array.do{|item, index|
+			waitTime_array[..5].do{|item, index|
 				var chain = allChains[(index/3).floor.asInteger];
 				var displayAlgo = ~getSectionDisplayState.value(chain, \algo).asInteger;
 
@@ -125,7 +125,7 @@ r = {
 				);
 			};
 
-			target_array.do{|item, index|
+			target_array[..5].do{|item, index|
 				var chain = allChains[(index/3).floor.asInteger];
 				var displayAlgo = ~getSectionDisplayState.value(chain, \algo).asInteger;
 
