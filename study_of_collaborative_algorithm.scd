@@ -630,7 +630,7 @@ OSCdef(\syncConfigs, {|msg|
 							// (receiver +" sending next message to " ++ nextTarget.asString).postln;
 
 							// For sample chain, it has an extra buffer argument
-							if ([\sample, \sampleFull].include(chainName), {
+							if ([\sample, \sampleFull].includes(chainName), {
 								n.sendMsg(
 									config.name, nextTarget, ~id, waitTime,
 									attackFn.value(),
