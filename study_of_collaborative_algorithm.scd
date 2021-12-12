@@ -142,7 +142,7 @@ Buffer.freeAll;
 		~partialStepMultiplier = val;
 		~genPartialConfig.value();
 	}, {
-		("***!!Invalid partial step multiplier :" ++ val).postln;
+		("***!!Invalid partial step multiplier :" ++ val).error;
 	});
 };
 
@@ -152,7 +152,7 @@ Buffer.freeAll;
 		~partialAmpMultiplier = val;
 		~genPartialConfig.value();
 	}, {
-		("***!!Invalid partial amp multiplier :" ++ val).postln;
+		("***!!Invalid partial amp multiplier :" ++ val).error;
 	});
 };
 
@@ -162,7 +162,7 @@ Buffer.freeAll;
 		~partialThreshold = val;
 		~genPartialConfig.value();
 	}, {
-		("***!!Invalid partial thresold :" ++ val).postln;
+		("***!!Invalid partial thresold :" ++ val).error;
 	});
 };
 
@@ -589,6 +589,7 @@ OSCdef(\syncConfigs, {|msg|
 			var sustain = msg[5];
 			var sampleBufindex = msg[6];
 			var toRespond = ~isSelfChecker.(receiver);
+			var chainName = config.name.asSymbol;
 
 			// "whether to response?".postln;
 			// toRespond.postln;
@@ -599,7 +600,7 @@ OSCdef(\syncConfigs, {|msg|
 			~state.recordPassing(config.name.asSymbol);
 
 			~play_message.(
-				config.name.asSymbol, from, receiver, lastWaitTime,
+				chainName, from, receiver, lastWaitTime,
 				attack, sustain, sampleBufindex
 			);
 
@@ -627,13 +628,23 @@ OSCdef(\syncConfigs, {|msg|
 							(config.name +" sending nil, stopped").postln;
 						}, {
 							// (receiver +" sending next message to " ++ nextTarget.asString).postln;
-							n.sendMsg(
-								config.name, nextTarget, ~id, waitTime,
-								attackFn.value(),
-								sustainFn.value(),
-								~getBufferByFeature.value(selectedFeature)
-							);
 
+							// For sample chain, it has an extra buffer argument
+							if ([\sample, \sampleFull].include(chainName), {
+								n.sendMsg(
+									config.name, nextTarget, ~id, waitTime,
+									attackFn.value(),
+									sustainFn.value(),
+									~getBufferByFeature.value(selectedFeature)
+								);
+
+							}, {
+								n.sendMsg(
+									config.name, nextTarget, ~id, waitTime,
+									attackFn.value(),
+									sustainFn.value(),
+								);
+							})
 						});
 				}.fork;},{
 					//else?
