@@ -146,3 +146,15 @@ n.sendMsg('/sampleFull', to, ~id, 0.1);
 (
 ~updateSectionDisplayState.value(\sine, \algo, true);
 )
+
+
+// Control the entire sections open/close
+// true -> open
+// false -> close
+(
+var action = true;
+~configs.collect(_[\name]).collect({|name|
+	~updateSectionDisplayState.value(name, \currentTarget, action);
+	~updateSectionDisplayState.value(name, \algo, action);
+});
+)
