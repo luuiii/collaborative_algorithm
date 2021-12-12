@@ -50,6 +50,8 @@ Buffer.clear;
 		tags.do {|tag|
 			var tagSymbol = tag.asSymbol;
 			buffersMap[tagSymbol] = (buffersMap[tagSymbol] ? [] ) ++ [index];
+			// add index
+			buffersMap[index] = [index];
 		}
 	};
 	[buffers, buffersMap];
@@ -328,12 +330,10 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 // 	});
 // };
 
-
 ~getBufferByFeature = {|feature|
 	var selectedSample = ~buffersMap[feature];
 	if (selectedSample.size > 0,{ selectedSample.choose}, {nil});
 };
-
 
 ~play_message = {|queueName, from, to, waitTime, attack, sustain, bufindex|
 	// When it's offline and it's not for you. We do nothing
