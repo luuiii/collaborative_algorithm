@@ -353,7 +353,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 	var panFunc = ~getPanFunc.value();
 	var pitchScale = ~state.getVal(queueName, \pitch);
 	var durScale = ~state.getVal(queueName, \dur) ? 1;
-	("received bufindex " ++ bufindex).postln;
+	// ("received bufindex " ++ bufindex).postln;
 
 	switch(queueName,
 		\buildUp, {
