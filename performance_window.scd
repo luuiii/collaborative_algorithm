@@ -205,5 +205,9 @@ w.onClose_({ r.stop; runBraid = false;});
 )
 
 
+(
+// If you want to keep the window on top
+w.alwaysOnTop = true;
+)
 //just in case
 // w.close
