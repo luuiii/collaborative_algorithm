@@ -18,22 +18,36 @@
 ~configs = [(
 	// sine sound
 	name: \sine,
-	waitTime: {1},
+	waitTime: {rrand(2, 5)},
 	nextTarget: {[1].choose},
-	attack: {0.00001},
-	sustain: {1}
+	attack: {0.5},
+	sustain: {0.2}
 ), (
 	// noise sound
 	name: \noise,
-	waitTime: {0.00001},
-	nextTarget: {[1].choose},
+	waitTime: {2},
+	nextTarget: {[0, 1].choose},
 	attack: {0.00001},
-	sustain: {1}
+	sustain: {0.2}
 ),  (
 	// Build up queue
 	name: \buildUp,
 	waitTime: {10.rand},
 	nextTarget: {[nil].choose}
+), (
+	name: \sample,
+	feature: Pseq([\telephone, \signal], inf),
+	waitTime: Pseq([4, 4], inf),
+	nextTarget: {[1].choose},
+	attack: {0.2},
+	sustain: {0.9}
+), (
+	name: \sampleFull,
+	feature: Pseq([\london], inf),
+	waitTime: Pseq([4], inf),
+	nextTarget: {[1].choose},
+	attack: {0.2},
+	sustain: {0.9}
 )
 ];
 
@@ -96,5 +110,51 @@ n.sendMsg('/noise', to, ~id, 0.1);
 // Start the buildUp queue
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/buildUp', 0, ~id, 0.1);
+n.sendMsg('/buildUp', to, ~id, 0.1);
+)
+
+(
+// Start sample chain
+var to = ~userList.reject(_==~id).choose;
+to.postln;
+n.sendMsg('/sample', to, ~id, 0.1);
+)
+
+
+(
+// Start sample full chain(always play the full duration)
+var to = ~userList.reject(_==~id).choose;
+to.postln;
+n.sendMsg('/sampleFull', to, ~id, 0.1);
+)
+
+
+(
+// Set sample durtion scale
+// 1 means same duration as waitTime
+~state.update(\sample, \dur, 1.1);
+)
+
+// Control display of current Target (0, 1, 2 number )
+// chain, \currentTarget, boolean
+(
+~updateSectionDisplayState.value(\sine, \currentTarget, true);
+)
+
+// Control display of pattern(waitTime, nextTarget)
+// chain, \algo, boolean
+(
+~updateSectionDisplayState.value(\sine, \algo, true);
+)
+
+
+// Control the entire sections open/close
+// true -> open
+// false -> close
+(
+var action = true;
+~configs.collect(_[\name]).collect({|name|
+	~updateSectionDisplayState.value(name, \currentTarget, action);
+	~updateSectionDisplayState.value(name, \algo, action);
+});
 )

@@ -9,12 +9,14 @@
 
 //to-do: maybe play a bit with sound
 
+
 (
 n = NetAddr("127.0.0.1", 57140);
 // The performer's ID
 // Jia - 0
 // Song - 1
 // Shuoxin - 2
+~state = State.new(n);
 ~id = 1;
 ~userNameList = [
 	"jia",
@@ -23,6 +25,44 @@ n = NetAddr("127.0.0.1", 57140);
 	"edward",
 ];
 ~userList = [0, 1, 2];
+~braidInitFreq = 110;
+
+// Buffers
+Buffer.freeAll;
+~audioFiles = "/Volumes/GoogleDrive/*/*/Musikfonds/audio/*.wav".pathMatch;
+~parseTagsFromPath = {|path|
+	var file, ext, chunks;
+	#file, ext = path.splitext;
+	chunks = file.split($-);
+	chunks[2].split($|);
+};
+
+
+~loadFiles = {|filePaths|
+	var buffers = [];
+	var buffersMap = IdentityDictionary.new();
+
+	filePaths.collect{ |path, index|
+		// 00-20211011-karlsruhe|announcment.wav
+		var tags = ~parseTagsFromPath.(path);
+		var buffer = Buffer.read(s, path);
+		buffers = buffers ++ buffer;
+
+		tags.do {|tag|
+			var tagSymbol = tag.asSymbol;
+			buffersMap[tagSymbol] = (buffersMap[tagSymbol] ? [] ) ++ [index];
+		}
+	};
+	[buffers, buffersMap];
+};
+
+~loadedContent = ~loadFiles.(~audioFiles);
+~buffers = ~loadedContent[0];
+~buffersMap = ~loadedContent[1];
+
+~buffersMap.keys().do{|key|
+	(key ++ " length: " ++ ~buffersMap[key].size).postln;
+};
 
 // To read the offline mode from config, if it's not there
 ~offlinePerformance = if(~offlinePerformance.isNil, false, ~offlinePerformance);
@@ -102,7 +142,7 @@ n = NetAddr("127.0.0.1", 57140);
 		~partialStepMultiplier = val;
 		~genPartialConfig.value();
 	}, {
-		("***!!Invalid partial step multiplier :" ++ val).postln;
+		("***!!Invalid partial step multiplier :" ++ val).error;
 	});
 };
 
@@ -112,7 +152,7 @@ n = NetAddr("127.0.0.1", 57140);
 		~partialAmpMultiplier = val;
 		~genPartialConfig.value();
 	}, {
-		("***!!Invalid partial amp multiplier :" ++ val).postln;
+		("***!!Invalid partial amp multiplier :" ++ val).error;
 	});
 };
 
@@ -122,8 +162,27 @@ n = NetAddr("127.0.0.1", 57140);
 		~partialThreshold = val;
 		~genPartialConfig.value();
 	}, {
-		("***!!Invalid partial thresold :" ++ val).postln;
+		("***!!Invalid partial thresold :" ++ val).error;
 	});
+};
+
+
+// display utility function for performance windows
+~checkSectionPart = {|part|
+	if([\currentTarget, \algo].includes(part).not, {
+		Error("Section part %s is invalid".format(part)).throw;
+	});
+};
+
+~getSectionDisplayState = {|chain, part|
+	var toDisplay = ~state.getVal(chain, part);
+	~checkSectionPart.value(part);
+	toDisplay == true || toDisplay == 1;
+};
+
+~updateSectionDisplayState = {|chain, part, val|
+	~checkSectionPart.value(part);
+	~state.update(chain, part, val);
 };
 
 
@@ -157,7 +216,8 @@ SynthDef(\sine, {|freq=440, amp=0.12, pan = 0, attack = 1, gate = 1|
 }).add;
 
 
-SynthDef(\braid, {|freq=440, amp=0.12, pan = 0, attack = 1, gate = 1, freqBus = 0, release=10|
+SynthDef(\braid, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1, freqBus = 0, release=10|
+
 	var detectedFreq, hasFreq;
 	var lagFreq = freq.lag(10);
 	var sig = SinOsc.ar(lagFreq);
@@ -167,7 +227,7 @@ SynthDef(\braid, {|freq=440, amp=0.12, pan = 0, attack = 1, gate = 1, freqBus = 
 		gate: gate,
 	);
 
-	#detectedFreq, hasFreq = Pitch.kr(sig, minFreq:40, maxFreq: 10500);
+	#detectedFreq, hasFreq = Pitch.kr(sig, initFreq: ~braidInitFreq, minFreq:40, maxFreq: 10500);
 	sig = Pan2.ar(sig, pan);
 	sig = sig*env*amp;
 
@@ -192,6 +252,44 @@ SynthDef(\gai_id,{|
 	sig = Pan2.ar(sig, pan);
 	sig = sig*env*amp;
 	Out.ar(0,sig)
+}).add;
+
+SynthDef(\playbufFull, {|out=0, pan=0, rate=1.0, attack=0.03, sustain=0.06, amp=1.0, startPos=0, bufnum|
+	var env, sig;
+	sig = PlayBuf.ar(
+		2, bufnum, rate: BufRateScale.kr(bufnum) * rate,
+		startPos: BufFrames.ir(bufnum) * startPos,
+		loop: 0, doneAction: Done.freeSelf);
+	env = EnvGen.kr(
+		Env([0, 1, 1, 0], [
+			(1 - sustain) * attack,
+			sustain,
+			(1 - sustain) * (1 - attack)
+		]),
+		doneAction: 2,
+		timeScale: BufDur.kr(bufnum) * (1 / rate),
+	);
+	sig = sig*env*amp;
+	Out.ar(out, sig);
+}).add;
+
+SynthDef(\playbuf, {|out=0, pan=0, dur=20, rate=1.0, attack=0.03, sustain=0.06, amp=1.0, startPos=0, bufnum|
+	var env, sig;
+	sig = PlayBuf.ar(
+		2, bufnum, rate: BufRateScale.kr(bufnum) * rate,
+		startPos: BufFrames.ir(bufnum) * startPos,
+		loop: 0, doneAction: Done.freeSelf);
+	env = EnvGen.kr(
+		Env([0, 1, 1, 0], [
+			(1 - sustain) * attack,
+			sustain,
+			(1 - sustain) * (1 - attack)
+		]),
+		doneAction: 2,
+		timeScale: dur
+	);
+	sig = sig*env*amp;
+	Out.ar(out, sig);
 }).add;
 
 SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 0.998, pan=0|
@@ -220,14 +318,72 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 	~offlinePerformance.not || (~isSelfChecker.value(loc));
 };
 
-~play_message = {|queueName, from, to, waitTime, attack, sustain|
+
+// ~getBufferByFeaturesState = {
+// 	var features = ~state.getVal(\sample, \features);
+//
+// 	if(features.isNil, {
+// 		~buffers.size.rand;
+// 		}, {
+// 			features.collect({|feature| ~buffersMap[feature]}).flat.choose;
+// 	});
+// };
+
+~getBufferByFeature = {|feature|
+	if(feature.isInteger, {
+		if ((feature < ~buffers.size) && (feature > -1), {
+			feature
+		}, {
+			("Invalid feature '" ++ feature ++"' for sample").error;
+			nil
+		});
+	}, {
+		var selectedSample;
+		selectedSample = ~buffersMap[feature];
+		if (selectedSample.size > 0,{ selectedSample.choose}, {
+			("Invalid feature '" ++ feature ++"'for sample").error;
+			nil
+		});
+	})
+};
+
+~play_message = {|queueName, from, to, waitTime, attack, sustain, bufindex|
 	// When it's offline and it's not for you. We do nothing
 	var respondToEvent = ~responseToEventForLoc.(from);
 	var panFunc = ~getPanFunc.value();
+	var pitchScale = ~state.getVal(queueName, \pitch);
+	var durScale = ~state.getVal(queueName, \dur) ? 1;
+	// ("received bufindex " ++ bufindex).postln;
+
 	switch(queueName,
 		\buildUp, {
 			~checkPartial.value();
 			~addPartial.value(genSound: respondToEvent);
+		},
+		\sample, {
+			if(respondToEvent && bufindex.isNil.not, {
+				Synth(\playbuf, [
+					\amp, 0.3,
+					\bufnum, ~buffers[bufindex],
+					\rate, 1,
+					\startPos, 0,
+					\dur, waitTime.value() * durScale,
+					\attack, attack ? 0.02,
+					\sustain, sustain ? 0.998,
+				]);
+			})
+		},
+		\sampleFull, {
+			if(respondToEvent && bufindex.isNil.not, {
+				Synth(\playbufFull, [
+					\amp, 0.3,
+					\bufnum, ~buffers[bufindex],
+					\rate, 1,
+					\startPos, 0,
+					\attack, attack ? 0.02,
+					\sustain, sustain ? 0.998,
+				]);
+			})
 		},
 		\noise, {
 			if(respondToEvent, {
@@ -235,7 +391,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 
 				Synth(\noise, [
 					\amp, 0.25,
-					\freq, freqs[to],
+					\freq, freqs[to] * pitchScale,
 					\rq, 0.5,
 					\pan, panFunc.value(from),
 					\dur, waitTime.value() * 0.4,
@@ -246,8 +402,11 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 		}, {
 			if(respondToEvent, {
 				var freqs = [400, 600, 900];
+
 				Synth(\gai_id, [
-					\freq, freqs[to] * waitTime.value().linexp(0, 19, 8, 0.00000001),
+					\freq, freqs[to] * waitTime.value().linexp(
+						0, 19, 8 * pitchScale, 0.00000001
+					),
 					\pan, panFunc.value(from),
 					\dur, waitTime.value() * 0.5,
 					\attack, attack ? 0.1,
@@ -260,7 +419,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 
 
 // Braid configs
-~freqList = [5000, 5000, 5000];
+~freqList = ~braidInitFreq.dup(~userList.size);
 ~maxDiff = 100;
 ~braidBus = Bus.new(\control, 0, ~userList.size);
 
@@ -326,6 +485,12 @@ OSCdef(\braid_kill, {|msg|
 	~killBraid.();
 }, \braid_kill);
 
+OSCdef(\update_state, {|msg|
+	var chain = msg[1].asSymbol;
+	var key = msg[2].asSymbol;
+	var val = msg[3];
+	~state.setVal(chain, key, val);
+}, \update_state);
 
 // Chat OSCDef
 OSCdef(\chat, {|msg|
@@ -384,6 +549,7 @@ OSCdef(\syncConfigs, {|msg|
 	~userChainVisualConfigs[userId] = config;
 }, \syncConfigs);
 
+
 ~syncChainConfigs = {
 	n.sendMsg(
 		'/syncConfigs',
@@ -398,6 +564,7 @@ OSCdef(\syncConfigs, {|msg|
 		// Function will stay the same
 		var waitTimeFn = config['waitTime'].asStream;
 		var nextTargetFn = config['nextTarget'].asStream;
+		var featureFn = config['feature'].asStream;
 
 		var attackFn = config['attack'].asStream;
 		var sustainFn = config['sustain'].asStream;
@@ -410,13 +577,19 @@ OSCdef(\syncConfigs, {|msg|
 			Error("Chain %s can't return an array for nextTarget".format(config.name.asSymbol)).throw;
 		});
 
+		if(config['feature'].asStream.value().isArray, {
+			Error("Chain %s can't return an array for feature".format(config.name.asSymbol)).throw;
+		});
+
 		OSCdef(config.name.asSymbol, {|msg|
 			var from = msg[2];
 			var receiver = msg[1];
 			var lastWaitTime = msg[3];
 			var attack = msg[4];
 			var sustain = msg[5];
+			var sampleBufindex = msg[6];
 			var toRespond = ~isSelfChecker.(receiver);
+			var chainName = config.name.asSymbol;
 
 			// "whether to response?".postln;
 			// toRespond.postln;
@@ -424,16 +597,23 @@ OSCdef(\syncConfigs, {|msg|
 			~histo[config.name] = (~histo[config.name]?[]).insert(0, [from, receiver]);
 			// (config.name.asString++":"++~histogram.value(config.name)).postln;
 
+			~state.recordPassing(config.name.asSymbol);
+
 			~play_message.(
-				config.name.asSymbol, from, receiver, lastWaitTime,
-				attack, sustain
+				chainName, from, receiver, lastWaitTime,
+				attack, sustain, sampleBufindex
 			);
+
+			// "============".postln;
+			// ~state.postln;
+			// "============".postln;
 
 			if(toRespond,
 				{
 					{
 						var nextTarget = nextTargetFn.value();
 						var waitTime = waitTimeFn.value();
+						var selectedFeature = featureFn.value();
 
 						// Debug logging
 						// ("***********").postln;
@@ -448,11 +628,23 @@ OSCdef(\syncConfigs, {|msg|
 							(config.name +" sending nil, stopped").postln;
 						}, {
 							// (receiver +" sending next message to " ++ nextTarget.asString).postln;
-							n.sendMsg(
-								config.name, nextTarget, ~id, waitTime,
-								attackFn.value(),
-								sustainFn.value()
-							);
+
+							// For sample chain, it has an extra buffer argument
+							if ([\sample, \sampleFull].includes(chainName), {
+								n.sendMsg(
+									config.name, nextTarget, ~id, waitTime,
+									attackFn.value(),
+									sustainFn.value(),
+									~getBufferByFeature.value(selectedFeature)
+								);
+
+							}, {
+								n.sendMsg(
+									config.name, nextTarget, ~id, waitTime,
+									attackFn.value(),
+									sustainFn.value(),
+								);
+							})
 						});
 				}.fork;},{
 					//else?

@@ -1,5 +1,5 @@
 (
-var scale = 1; //1.5 for full HD
+var scale = 1.5; //1.5 for full HD
 var width = 1280 * scale;
 var height = 720 * scale;
 
@@ -10,12 +10,13 @@ var left = width * (0.5 - indent_lmr) - leftshift;
 var mid = width * 0.5 - leftshift;
 var right = width * (0.5 + indent_lmr) - leftshift;
 
-var line_space = 0.2 * height;
-var algo_space = 0.07 * height;
+var current_message_space = 0.15 * height;
+var algo_space = 0.03 * height;
 
-var line = [];
+var current_message = [];
 var waitTime_array = [];
 var target_array = [];
+var feature_array = [];
 // var chat_array = [];
 
 var indent = 0.03125 * width;
@@ -36,6 +37,13 @@ var movingSpeed = 1 * scale;
 var drawWidth = 0.1;
 var chatTextField;
 var chatSentencesCount = 7;
+
+var allChains = [\sine, \noise, \buildUp, \sample, \sampleFull];
+
+var chatStringColor = Color.gray(0.8);
+var colorboxW = [Color.black, Color.white];
+var colorboxG = [Color.black,Color.gray(gray: 0.8)];
+var colorboxR = [Color.black, Color.fromHexString("E93000")];
 
 // Get the display value for the chain and a key
 // for example: getValuesForKey.(\noise, \waitTime)
@@ -59,32 +67,85 @@ var show = {|items|
 w = Window.new(name:"[ _  _  _ ]", bounds: Rect(0, 0, width, height), border:true);
 w.view.background = Color.black;
 
-line = Array.fill(9,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.75*box_width), 1.07*posY + ((i/3).floor*line_space), box_width, height)).font_(Font("Helvetica Neue",4.5*[32,32,5][(i/3).floor.asInteger] * scale,[0,1,0][(i/3).floor.asInteger].asBoolean,[0,1,0][(i/3).floor.asInteger].asBoolean)).stringColor_([Color.white,Color.white,Color.fromHexString("E93000")][(i/3).floor.asInteger]).align_(\center);});
+current_message = Array.fill(15,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.75*box_width), 1.07*posY + ((i/3).floor*current_message_space), box_width, height)).font_(Font("Helvetica Neue",scale*32*[3,3,0.5,1,1][i/3],
+	[0,1,0,0,0][(i/3).floor.asInteger].asBoolean,[0,1,0,1,0][(i/3).floor.asInteger].asBoolean)).stringColor_([Color.white,Color.white,Color.fromHexString("E93000"),Color.white,Color.white][i/3]).align_([\left,\left,\left,\right,\right][i/3]);});
 
-waitTime_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + algo_space + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",17 * scale)).align_(\center)});
+waitTime_array = Array.fill(15,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + algo_space + ((i/3).floor*current_message_space), box_width, height)).font_(Font("menlo",11 * scale)).align_(\left).stringColor_(Color.gray)});
 
-target_array = Array.fill(6,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + (2 * algo_space) + ((i/3).floor*line_space), box_width, height)).font_(Font("menlo",17 * scale)).align_(\center)});
+target_array = Array.fill(15,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + (2 * algo_space) + ((i/3).floor*current_message_space), box_width, height)).font_(Font("menlo",11 * scale)).align_(\left).stringColor_(Color.gray)});
+
+feature_array = Array.fill(15,{|i| StaticText.new(w, Rect([left, mid, right][i%3]-(0.5*box_width), posY + (3.2 * algo_space) + ((i/3).floor*current_message_space), box_width, height)).font_(Font("menlo",11 * scale)).align_(\right).stringColor_(Color.gray)});
 
 chatTextField = StaticText.new(
 	w, Rect(chat_indent, chat_posY, chatSectionWidth, height*0.395)
-).font_(Font("menlo", 13 * scale)).align_(\bottomLeft).stringColor_(Color.gray);
+).font_(Font("menlo", 12 * scale)).align_(\bottomLeft).stringColor_(chatStringColor);
 
 
 w.front;
 r = {
 	inf.do { |i|
 		{
-			line[..5].do{|item, index|
-				item.string_(show.((~histogram.([\sine, \noise, \buildUp][index/3.floor.asInteger])?"")[index%3]));
-			};
-			line[6..8].do{|item, index|
-				item.string_(show.(([0,1,2].includes((~histogram.(\buildUp)?"")[index%3])).if({~partialCount},{""})));
-			};
-			waitTime_array.do{|item, index| item.string_(
-				getValuesForKey.([\sine, \noise, \buildUp][(index/3).floor.asInteger], \waitTime, index%3).join).stringColor_(Color.gray)};
+			var switchSineCurrentTarget = ~getSectionDisplayState.(\sine, \currentTarget).asInteger;
+			var switchSineAlgo = 0;
+			var switchNoiseCurrentTarget = ~getSectionDisplayState.(\noise, \currentTarget).asInteger;
+			var switchNoiseAlgo = 1;
+			var switchBuildUpCurrentTarget = ~getSectionDisplayState.(\buildUp, \currentTarget).asInteger;
+			var switchBuildUpAlgo = 1;
+			var switchSampleCurrentTarget = ~getSectionDisplayState.(\sample, \currentTarget).asInteger;
+			var switchSampleUpAlgo = 1;
+			var switchSampleFullCurrentTarget = ~getSectionDisplayState.(\sampleFull, \currentTarget).asInteger;
+			var switchSampleFullUpAlgo = 1;
 
-			target_array.do{|item, index| item.string_(
-				getValuesForKey.([\sine, \noise, \buildUp][(index/3).floor.asInteger], \nextTarget, index%3).join).stringColor_(Color.gray)};
+			current_message[..2].do{|item, index|
+				item.string_(show.((~histogram.([\sine][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchSineCurrentTarget]);
+			};
+			current_message[3..5].do{|item, index|
+				item.string_(show.((~histogram.([\noise][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchNoiseCurrentTarget]);
+			};
+
+			current_message[6..8].do{|item, index|
+				item.string_(show.(([0,1,2].includes((~histogram.(\buildUp)?"")[index%3])).if({~partialCount},{""}))).stringColor_(colorboxR[switchBuildUpCurrentTarget]);
+			};
+
+			current_message[9..11].do{|item, index|
+				item.string_(show.((~histogram.([\sample][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchSampleCurrentTarget]);
+			};
+			current_message[12..14].do{|item, index|
+				item.string_(show.((~histogram.([\sampleFull][index/3.floor.asInteger])?"")[index%3])).stringColor_(colorboxW[switchSampleFullCurrentTarget]);
+			};
+
+			waitTime_array[..5].do{|item, index|
+				var chain = allChains[(index/3).floor.asInteger];
+				var displayAlgo = ~getSectionDisplayState.value(chain, \algo).asInteger;
+
+				item.string_(
+					getValuesForKey.(chain, \waitTime, index%3).join
+				).stringColor_(
+					colorboxG[displayAlgo]
+				);
+			};
+
+			target_array[..5].do{|item, index|
+				var chain = allChains[(index/3).floor.asInteger];
+				var displayAlgo = ~getSectionDisplayState.value(chain, \algo).asInteger;
+
+				item.string_(
+					getValuesForKey.(chain, \nextTarget, index%3).join
+				).stringColor_(
+					colorboxG[displayAlgo]
+				);
+			};
+
+			feature_array[9..14].do{|item, index|
+				var chain = [\sample, \sampleFull][(index/3).floor.asInteger];
+				var displayAlgo = ~getSectionDisplayState.value(chain, \algo).asInteger;
+
+				item.string_(
+					getValuesForKey.(chain, \feature, index%3).join
+				).stringColor_(
+					colorboxG[displayAlgo]
+				);
+			};
 
 			// join the line break with the first "chatSentencesCount" count of chat
 
@@ -144,5 +205,9 @@ w.onClose_({ r.stop; runBraid = false;});
 )
 
 
+(
+// If you want to keep the window on top
+w.alwaysOnTop = true;
+)
 //just in case
 // w.close
