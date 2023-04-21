@@ -463,13 +463,20 @@ OSCdef(\apply_freq,{|msg|
 		"braidSynth Initialized ".postln;
 		~braidisInitialized = true;
 		~braidSynth = ~freqList.collect({|item, index|
-			if (~responseToEventForLoc.value(index), {
+				Synth(\braid, [
+					\freq, item,
+					\pan, ~getPanFunc.value().value(index),
+					\freqBus, ~braidBus.index + index,
+     				\amp, if(~responseToEventForLoc.value(index), {0.1}, {0}),
+				]);
+
+/*			if (~responseToEventForLoc.value(index), {
 				Synth(\braid, [
 					\freq, item,
 					\pan, ~getPanFunc.value().value(index),
 					\freqBus, ~braidBus.index + index,
 				]);
-			});
+			});*/
 		});
 	},{
 		~applyFreqChange.value(msg[1],msg[2]);
