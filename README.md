@@ -36,6 +36,7 @@ dates:
 - granular synthesis?
 - chain modulate chain?
 - \buildUp structure >> the freq-array morphing
+- add new chain for dynamic control (2024 to-do?)
 
 
 
