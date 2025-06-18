@@ -18,7 +18,7 @@
 ~configs = [(
 	// sine sound
 	name: \sine,
-	waitTime: {rrand(2, 5)},
+	waitTime: {rrand(1, 1)},
 	nextTarget: {[1].choose},
 	attack: {0.5},
 	sustain: {0.2}
@@ -91,41 +91,43 @@ n.sendMsg('/\build_up_partial_amp_multiplier', 0.6);
 n.sendMsg('/chat', ~id, "chin burger");
 
 // **** Kick off the chain
+
+
 (
 // Start the sine chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/sine', to, ~id, 1);
+// target, sender, waitTime, attack, sustain, level, maxLevel
+n.sendMsg('/sine', 1, ~id, 1, 0.5, 0.2, 0, 20);
 )
 
 (
 // start the noise chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/noise', to, ~id, 0.1);
+n.sendMsg('/noise', to, ~id, 0.1, 0.00001, 0.2, 0, 12); // target, sender, waitTime, attack, sustain, level, maxLevel
 )
-
 
 (
-// Start the buildUp queue
+// Start buildUp chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/buildUp', to, ~id, 0.1);
+n.sendMsg('/buildUp', to, ~id, 0.1, 0.1, 0.2, 0, 5); // target, sender, waitTime, attack, sustain, level, maxLevel
 )
+
 
 (
 // Start sample chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/sample', to, ~id, 0.1);
+n.sendMsg('/sample', to, ~id, 4, 0.2, 0.9, nil, 0, 6); // target, sender, waitTime, attack, sustain, bufIndex, level, maxLevel
 )
 
-
 (
-// Start sample full chain(always play the full duration)
+// Start sample full chain (always play the full duration)
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/sampleFull', to, ~id, 0.1);
+n.sendMsg('/sampleFull', to, ~id, 4, 0.2, 0.9, nil, 0, 6); // target, sender, waitTime, attack, sustain, bufIndex, level, maxLevel
 )
 
 

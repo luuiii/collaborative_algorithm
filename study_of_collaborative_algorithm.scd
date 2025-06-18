@@ -347,13 +347,15 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 	})
 };
 
-~play_message = {|queueName, from, to, waitTime, attack, sustain, bufindex|
+~play_message = {|queueName, from, to, waitTime, attack, sustain, bufindex, level|
 	// When it's offline and it's not for you. We do nothing
 	var respondToEvent = ~responseToEventForLoc.(from);
 	var panFunc = ~getPanFunc.value();
 	var pitchScale = ~state.getVal(queueName, \pitch);
 	var durScale = ~state.getVal(queueName, \dur) ? 1;
-	// ("received bufindex " ++ bufindex).postln;
+
+	// Log level information
+	("Chain: " ++ queueName ++ " | Level: " ++ (level ? 0) ++ " | From: " ++ from ++ " | To: " ++ to).postln;
 
 	switch(queueName,
 		\buildUp, {
@@ -361,6 +363,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 			~addPartial.value(genSound: respondToEvent);
 		},
 		\sample, {
+			// Skip sample chains for now as requested
 			if(respondToEvent && bufindex.isNil.not, {
 				Synth(\playbuf, [
 					\amp, 0.3,
@@ -374,6 +377,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 			})
 		},
 		\sampleFull, {
+			// Skip sample chains for now as requested
 			if(respondToEvent && bufindex.isNil.not, {
 				Synth(\playbufFull, [
 					\amp, 0.3,
@@ -385,16 +389,23 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 				]);
 			})
 		},
-		\noise, {
+				\noise, {
 			if(respondToEvent, {
 				var freqs = [300, 700, 2300];
 
+				// Level-based calculations (customize these!)
+				var newAmp = 0.25; // level can be used here
+				var newFreq = freqs[to] * pitchScale; // level can be used here
+				var newRq = 0.5; // level can be used here
+				var newDur = waitTime.value() * 0.4; // level can be used here
+
+
 				Synth(\noise, [
-					\amp, 0.25,
-					\freq, freqs[to] * pitchScale,
-					\rq, 0.5,
+					\amp, newAmp,
+					\freq, newFreq,
+					\rq, newRq,
 					\pan, panFunc.value(from),
-					\dur, waitTime.value() * 0.4,
+					\dur, newDur,
 					\attack, attack ? 0.5,
 					\sustain, sustain ? 0.998,
 				]);
@@ -403,12 +414,19 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 			if(respondToEvent, {
 				var freqs = [400, 600, 900];
 
+				// Level-based calculations (customize these!)
+				var newFreq = freqs[to] * waitTime.value().linexp(
+					0, 19, 8 * pitchScale, 0.00000001);
+				var newDur = waitTime.value() * 0.5;
+
+				// level can be used here
+				newFreq = newFreq * (1 / (level + 1));
+				("freq now is " ++ newFreq).postln;
+
 				Synth(\gai_id, [
-					\freq, freqs[to] * waitTime.value().linexp(
-						0, 19, 8 * pitchScale, 0.00000001
-					),
+					\freq, newFreq,
 					\pan, panFunc.value(from),
-					\dur, waitTime.value() * 0.5,
+					\dur, newDur,
 					\attack, attack ? 0.1,
 					\sustain, sustain ? 0.7,
 				]);
@@ -416,6 +434,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 		}
 	);
 };
+
 
 
 // Braid configs
@@ -587,9 +606,22 @@ OSCdef(\syncConfigs, {|msg|
 			var lastWaitTime = msg[3];
 			var attack = msg[4];
 			var sustain = msg[5];
-			var sampleBufindex = msg[6];
+			var sampleBufindex, currentLevel, maxLevel;
 			var toRespond = ~isSelfChecker.(receiver);
 			var chainName = config.name.asSymbol;
+
+			// Handle different parameter layouts for sample vs non-sample chains
+			if ([\sample, \sampleFull].includes(chainName), {
+				// Sample chains: target, sender, waitTime, attack, sustain, bufIndex, level, maxLevel
+				sampleBufindex = msg[6];
+				currentLevel = msg[7] ? 0;
+				maxLevel = msg[8] ? 10;
+			}, {
+				// Non-sample chains: target, sender, waitTime, attack, sustain, level, maxLevel
+				sampleBufindex = nil;
+				currentLevel = msg[6] ? 0;
+				maxLevel = msg[7] ? 10;
+			});
 
 			// "whether to response?".postln;
 			// toRespond.postln;
@@ -601,7 +633,7 @@ OSCdef(\syncConfigs, {|msg|
 
 			~play_message.(
 				chainName, from, receiver, lastWaitTime,
-				attack, sustain, sampleBufindex
+				attack, sustain, sampleBufindex, currentLevel
 			);
 
 			// "============".postln;
@@ -614,37 +646,47 @@ OSCdef(\syncConfigs, {|msg|
 						var nextTarget = nextTargetFn.value();
 						var waitTime = waitTimeFn.value();
 						var selectedFeature = featureFn.value();
+						var nextLevel = currentLevel + 1; // Increment level
 
 						// Debug logging
 						// ("***********").postln;
 						// ("**" ++ config.name ++ "**:").postln;
 						// ("Next target is " ++ nextTarget).postln;
 						// ("Getting wait time " ++ waitTime).postln;
+						// ("Current level: " ++ currentLevel ++ " -> Next level: " ++ nextLevel ++ " | maxLevel: " ++ maxLevel).postln;
 						// ("***********").postln;
 						waitTime.wait;
 
-
-						if (nextTarget.isNil, {
-							(config.name +" sending nil, stopped").postln;
+						// Check if we've reached max level
+						if (nextLevel >= maxLevel, {
+							(config.name ++ " reached max level " ++ maxLevel ++ ", stopping chain").postln;
 						}, {
-							// (receiver +" sending next message to " ++ nextTarget.asString).postln;
-
-							// For sample chain, it has an extra buffer argument
-							if ([\sample, \sampleFull].includes(chainName), {
-								n.sendMsg(
-									config.name, nextTarget, ~id, waitTime,
-									attackFn.value(),
-									sustainFn.value(),
-									~getBufferByFeature.value(selectedFeature)
-								);
-
+							if (nextTarget.isNil, {
+								(config.name +" sending nil, stopped").postln;
 							}, {
-								n.sendMsg(
-									config.name, nextTarget, ~id, waitTime,
-									attackFn.value(),
-									sustainFn.value(),
-								);
-							})
+								// (receiver +" sending next message to " ++ nextTarget.asString).postln;
+
+								// For sample chain, it has an extra buffer argument
+								if ([\sample, \sampleFull].includes(chainName), {
+									n.sendMsg(
+										config.name, nextTarget, ~id, waitTime,
+										attackFn.value(),
+										sustainFn.value(),
+										~getBufferByFeature.value(selectedFeature),
+										nextLevel, // Pass incremented level
+										maxLevel // Pass maxLevel through the chain
+									);
+
+								}, {
+									n.sendMsg(
+										config.name, nextTarget, ~id, waitTime,
+										attackFn.value(),
+										sustainFn.value(),
+										nextLevel, // Pass incremented level
+										maxLevel // Pass maxLevel through the chain
+									);
+								})
+							});
 						});
 				}.fork;},{
 					//else?
