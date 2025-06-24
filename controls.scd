@@ -68,11 +68,9 @@ s.meter
 
 
 // update sine base freq
-~getFreq.value();
-
 (
-var freq = 10000;
-~state.update(\baseFreq, ~id, freq);
+var freq = 3000;
+~state.update(\baseFreq, ~id.asSymbol, freq);
 );
 
 // *** Braids Section
