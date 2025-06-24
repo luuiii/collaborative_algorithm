@@ -216,7 +216,7 @@ SynthDef(\sine, {|freq=440, amp=0.12, pan = 0, attack = 1, gate = 1|
 }).add;
 
 
-SynthDef(\braid, {|freq=440, amp=0.1, pan = 0, attack = 1, gate = 1, freqBus = 0, release=10|
+SynthDef(\braid, {|freq=440, amp=0.04, pan = 0, attack = 1, gate = 1, freqBus = 0, release=10|
 
 	var detectedFreq, hasFreq;
 	var lagFreq = freq.lag(10);
@@ -347,7 +347,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 	})
 };
 
-~play_message = {|queueName, from, to, waitTime, attack, sustain, bufindex, level|
+~play_message = {|queueName, from, to, waitTime, attack, sustain, amp, bufindex, level|
 	// When it's offline and it's not for you. We do nothing
 	var respondToEvent = ~responseToEventForLoc.(from);
 	var panFunc = ~getPanFunc.value();
@@ -391,13 +391,13 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 		},
 				\noise, {
 			if(respondToEvent, {
-				var freqs = [300, 700, 2300];
+				var freqs = [300, 2000, 2300];
 
 				// Level-based calculations (customize these!)
-				var newAmp = 0.25; // level can be used here
-				var newFreq = freqs[to] * pitchScale; // level can be used here
-				var newRq = 0.5; // level can be used here
-				var newDur = waitTime.value() * 0.4; // level can be used here
+				var newAmp = amp ? 0.25;
+				var newFreq = freqs[to] * pitchScale * level.linexp(0, 400, 1, 4);
+				var newRq = level.linexp(0, 400, 0.05, 1);
+				var newDur = waitTime.value() * 0.4 * level.linexp(0, 200, 1, 0.5);
 
 
 				Synth(\noise, [
@@ -412,19 +412,24 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 			})
 		}, {
 			if(respondToEvent, {
-				var freqs = [400, 600, 900];
+				var freqs = [400, 2000, 900];
 
 				// Level-based calculations (customize these!)
-				var newFreq = freqs[to] * waitTime.value().linexp(
-					0, 19, 8 * pitchScale, 0.00000001);
-				var newDur = waitTime.value() * 0.5;
+				var newAmp = (amp ? 0.5) * 0.12; // level can be used here
+				var newFreq = freqs[to] * pitchScale;
+				var newDur = waitTime.value() * 0.7;
 
 				// level can be used here
-				newFreq = newFreq * (1 / (level + 1));
+				// 1, 1/2, 2/3, 3/4, 4/5;
+				newFreq = newFreq * if (level === 0, {
+					1;
+				}, {(level) / (level + 1)});
+
 				("freq now is " ++ newFreq).postln;
 
 				Synth(\gai_id, [
 					\freq, newFreq,
+					\amp, newAmp,
 					\pan, panFunc.value(from),
 					\dur, newDur,
 					\attack, attack ? 0.1,
@@ -587,6 +592,7 @@ OSCdef(\syncConfigs, {|msg|
 
 		var attackFn = config['attack'].asStream;
 		var sustainFn = config['sustain'].asStream;
+		var ampFn = config['amp'].asStream;
 
 		if(config['waitTime'].asStream.value().isArray, {
 			Error("Chain %s can't return an array for waitTime".format(config.name.asSymbol)).throw;
@@ -600,27 +606,28 @@ OSCdef(\syncConfigs, {|msg|
 			Error("Chain %s can't return an array for feature".format(config.name.asSymbol)).throw;
 		});
 
-		OSCdef(config.name.asSymbol, {|msg|
+				OSCdef(config.name.asSymbol, {|msg|
 			var from = msg[2];
 			var receiver = msg[1];
 			var lastWaitTime = msg[3];
 			var attack = msg[4];
 			var sustain = msg[5];
+			var amp = msg[6];
 			var sampleBufindex, currentLevel, maxLevel;
 			var toRespond = ~isSelfChecker.(receiver);
 			var chainName = config.name.asSymbol;
 
 			// Handle different parameter layouts for sample vs non-sample chains
 			if ([\sample, \sampleFull].includes(chainName), {
-				// Sample chains: target, sender, waitTime, attack, sustain, bufIndex, level, maxLevel
-				sampleBufindex = msg[6];
+				// Sample chains: target, sender, waitTime, attack, sustain, amp, bufIndex, level, maxLevel
+				sampleBufindex = msg[7];
+				currentLevel = msg[8] ? 0;
+				maxLevel = msg[9] ? 10;
+			}, {
+				// Non-sample chains: target, sender, waitTime, attack, sustain, amp, level, maxLevel
+				sampleBufindex = nil;
 				currentLevel = msg[7] ? 0;
 				maxLevel = msg[8] ? 10;
-			}, {
-				// Non-sample chains: target, sender, waitTime, attack, sustain, level, maxLevel
-				sampleBufindex = nil;
-				currentLevel = msg[6] ? 0;
-				maxLevel = msg[7] ? 10;
 			});
 
 			// "whether to response?".postln;
@@ -633,7 +640,7 @@ OSCdef(\syncConfigs, {|msg|
 
 			~play_message.(
 				chainName, from, receiver, lastWaitTime,
-				attack, sustain, sampleBufindex, currentLevel
+				attack, sustain, amp, sampleBufindex, currentLevel
 			);
 
 			// "============".postln;
@@ -672,6 +679,7 @@ OSCdef(\syncConfigs, {|msg|
 										config.name, nextTarget, ~id, waitTime,
 										attackFn.value(),
 										sustainFn.value(),
+										ampFn.value(),
 										~getBufferByFeature.value(selectedFeature),
 										nextLevel, // Pass incremented level
 										maxLevel // Pass maxLevel through the chain
@@ -682,6 +690,7 @@ OSCdef(\syncConfigs, {|msg|
 										config.name, nextTarget, ~id, waitTime,
 										attackFn.value(),
 										sustainFn.value(),
+										ampFn.value(),
 										nextLevel, // Pass incremented level
 										maxLevel // Pass maxLevel through the chain
 									);
