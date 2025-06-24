@@ -20,8 +20,8 @@ s.meter
 ~configs = [(
 	// sine sound
 	name: \sine,
-	waitTime: Pbrown(10, 1, 0.5, inf),
-	nextTarget: {[1].choose},
+	waitTime: {1},
+	nextTarget: {[0].choose},
 	attack: {0.5},
 	sustain: {0.2},
 	amp: {0.3},
@@ -66,6 +66,12 @@ s.meter
 ~updateOSCDefs.value(~configs);
 )
 
+
+// update sine base freq
+(
+var freq = 1000;
+~state.setVal(\baseFreq, ~id, freq);
+);
 
 // *** Braids Section
 (
@@ -115,7 +121,7 @@ StageLimiter.activate
 var to = ~userList.reject(_==~id).choose;
 to.postln;
 // target, sender, waitTime, attack, sustain, amp, level, maxLevel
-n.sendMsg('/sine', 1, ~id, rrand(1, 2), 0.5, 0.2, 0.12, 0, rrand(50, 400));
+n.sendMsg('/sine', 0, ~id, rrand(1, 2), 0.5, 0.2, 0.12, 0, rrand(50, 400));
 )
 
 (

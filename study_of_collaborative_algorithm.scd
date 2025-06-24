@@ -17,7 +17,9 @@ n = NetAddr("127.0.0.1", 57140);
 // Song - 1
 // Shuoxin - 2
 ~state = State.new(n);
-~id = 1;
+~id = 0;
+~initBaseFreq = 2000;
+~state.setVal(\baseFreq, 0, ~initBaseFreq);
 ~userNameList = [
 	"jia",
 	"song",
@@ -412,7 +414,11 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 			})
 		}, {
 			if(respondToEvent, {
-				var freqs = [400, 2000, 900];
+				var freqs = [
+					~state.getVal(\baseFreq, 0) ? ~initBaseFreq,
+					~state.getVal(\baseFreq, 1) ? ~initBaseFreq,
+					~state.getVal(\baseFreq, 2) ? ~initBaseFreq,
+				];
 
 				// Level-based calculations (customize these!)
 				var newAmp = (amp ? 0.5) * 0.12; // level can be used here
