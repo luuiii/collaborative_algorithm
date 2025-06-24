@@ -11,13 +11,13 @@
 
 
 (
-n = NetAddr("127.0.0.1", 57140);
+n = NetAddr("127.0.0.1", 57120);
 // The performer's ID
 // Jia - 0
 // Song - 1
 // Shuoxin - 2
 ~state = State.new(n);
-~id = 1;
+~id = 2;
 ~userNameList = [
 	"jia",
 	"song",

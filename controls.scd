@@ -14,26 +14,57 @@
 // waitTime: Pseq([0.1, 0.2, 0.3], inf)
 (
 // This is the switch to control whether we are playing in a physical venue
+//~offlinePerformance = false;
 ~offlinePerformance = false;
 ~configs = [(
 	// sine sound
 	name: \sine,
-	waitTime: {rrand(2, 5)},
-	nextTarget: {[1].choose},
-	attack: {0.5},
+	//waitTime: 1/1.exp,
+	waitTime: Pseq([1/1.exp, 1.exp*0.499]*0.944, inf),
+	//waitTime: Pbrown(0.30, 0.333, 0.03)/pi, //  /3
+	//waitTime: {exprand(1/pi, 1/1.exp)*0.9},
+	//waitTime: 1/1.exp, //1.05,
+	//waitTime: pi*pi,
+	//waitTime: Pwhite(0.1, Pbrown(0.1, 1.11, 0.125), inf), //1.01/0.1, 1.01,1.001,1.11
+	//waitTime: {rrand(0.2, 0.5)-0.3}, //0.2, 0.5 -0.3, + 1.01
+
+
+	//waitTime: Pgeom(1/1.exp, Pbrown(1.01, 1.11),inf),
+	//waitTime: Pgeom(1/pi-0.3, Pbrown(1.01, 1.11),inf),
+
+	//waitTime: Pwhite(0.1, Pbrown(2.50, 2.90, 0.05), inf),
+	//waitTime: Pwhite(0.1, Pbrown(0.50, 2.90, 0.05), inf),//0.1, 1.01,1.11
+	//waitTime: {rrand(0.19, 0.23)+1.01}, //0.2, 0.5
+	//waitTime: Pseq([1/1.exp,1.exp, pi, 1/pi].powerset.flatten.scramble, inf),
+
+	//nextTarget: {[0,1].choose},
+	nextTarget: Pseq([0,1,2].powerset.flatten,inf),
+	//nextTarget: {[1,2].choose},
+
+	//attack: {0.9},
+	attack: {[0.005, 0.1].choose},
+	//attack: {[0.005, 0.9].choose},
+	//attack: {[0.005, 0.1, 0.3, 0.5, 0.7, 0.9].choose},
+	//attack: {[0.005].choose},
 	sustain: {0.2}
 ), (
 	// noise sound
 	name: \noise,
-	waitTime: {2},
-	nextTarget: {[0, 1].choose},
-	attack: {0.00001},
-	sustain: {0.2}
+	waitTime: {pi},
+	//waitTime: Pseq([0.25, 0.5], inf),
+	nextTarget: {[0,1,2].choose},
+	//nextTarget: {[nil].choose},
+	//attack: {0.00001},
+	//attack: Pseq([0.25, 0.5], inf),
+	//attack: {[0.001,0.9].choose},
+	attack: {pi},
+	sustain: {1/pi}
 ),  (
 	// Build up queue
 	name: \buildUp,
-	waitTime: {10.rand},
-	nextTarget: {[nil].choose}
+	waitTime: {0.1},
+	nextTarget: {[nil].choose},
+	//nextTarget: {[0,1,2].choose}
 ), (
 	name: \sample,
 	feature: Pseq([\telephone, \signal], inf),
@@ -63,14 +94,14 @@
 // Send braid change
 // positive number means add freq to the oscillator
 // negative means minus
-n.sendMsg('/braid', ~id, 1);
+n.sendMsg('/braid', ~id, 10);
 )
 
 // Kill braid!
 n.sendMsg('/braid_kill');
-
+.
 // Update braid max diff! (in frequency)
-n.sendMsg('/braid_update_maxdiff', 200);
+n.sendMsg('/braid_update_maxdiff', 5000);
 
 // ***** Build up
 
@@ -78,7 +109,7 @@ n.sendMsg('/braid_update_maxdiff', 200);
 n.sendMsg('/\build_up_kill');
 
 // Setting partial coount threshold (eg, how many partials)
-n.sendMsg('/build_up_partial_threshold', 10);
+n.sendMsg('/build_up_partial_threshold', 3);
 
 // Setting the step multiplier(how big each partial grow)
 n.sendMsg('/\build_up_partial_step_multiplier', 1);
@@ -88,7 +119,7 @@ n.sendMsg('/\build_up_partial_amp_multiplier', 0.6);
 
 //////////////////////////////////////////chat
 
-n.sendMsg('/chat', ~id, "chin burger");
+n.sendMsg('/chat', ~id, "jingkelong niubi");
 
 // **** Kick off the chain
 (

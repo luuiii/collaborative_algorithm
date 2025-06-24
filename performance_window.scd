@@ -1,5 +1,5 @@
 (
-var scale = 1.5; //1.5 for full HD
+var scale = 0.5; //1.5 for full HD
 var width = 1280 * scale;
 var height = 720 * scale;
 
