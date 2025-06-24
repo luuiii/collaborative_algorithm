@@ -19,7 +19,7 @@ n = NetAddr("127.0.0.1", 57140);
 ~state = State.new(n);
 ~id = 0;
 ~initBaseFreq = 2000;
-~state.setVal(\baseFreq, 0, ~initBaseFreq);
+~state.setVal(\baseFreq, ~id, ~initBaseFreq);
 ~userNameList = [
 	"jia",
 	"song",
