@@ -349,6 +349,15 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 	})
 };
 
+
+~getFreq = {
+	[
+		~state.getVal(\baseFreq, 0.asSymbol) ? ~initBaseFreq,
+		~state.getVal(\baseFreq, 1.asSymbol) ? ~initBaseFreq,
+		~state.getVal(\baseFreq, 2.asSymbol) ? ~initBaseFreq,
+	];
+};
+
 ~play_message = {|queueName, from, to, waitTime, attack, sustain, amp, bufindex, level|
 	// When it's offline and it's not for you. We do nothing
 	var respondToEvent = ~responseToEventForLoc.(from);
@@ -414,11 +423,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 			})
 		}, {
 			if(respondToEvent, {
-				var freqs = [
-					~state.getVal(\baseFreq, 0) ? ~initBaseFreq,
-					~state.getVal(\baseFreq, 1) ? ~initBaseFreq,
-					~state.getVal(\baseFreq, 2) ? ~initBaseFreq,
-				];
+				var freqs = ~getFreq.value();
 
 				// Level-based calculations (customize these!)
 				var newAmp = (amp ? 0.5) * 0.12; // level can be used here
