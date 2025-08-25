@@ -8,11 +8,46 @@ dates:
 - [Ambient Festival](https://ambient-festival.com/ensemble/) @ cologne st.michael - 2021.09.09 - CEST 23:00
 - [Der dritte Körper](https://third.notimportant.org) @ cologne st.michael - 2021.08.31 - CEST 22:00
 - [algopolis live Ljudmila](https://wiki.ljudmila.org/Algopolis_live) @ ljubljana - 2021.05.14 - CEST 22:10
-- escdotdot presents [ _  _  _ ] - [collaborative algorithmic music performance](https://ava.hkbu.edu.hk/en/events/___)  @ HK - 2021.03.14 - HKT 19:00
+- escdotdot presents [协作算法音乐表演 | Collaborative Algorithmic Music Performance](https://ava.hkbu.edu.hk/en/events/___) @ HKBU AVA Kai Tak Campus, Hong Kong - 2021.03.14 - HKT 19:00
 - [TOPLAP Live Stream](https://transnodal.toplap.org/) - 19.Feb.2021 - CET 21:00
-- ~~IMWI-concert: 2021.01.29~~ canceled
-- ~~Deadline of application for IMWI-concert:2020.11.30~~
 
+## **Release**
+[[ _ _ _ ]](https://e---e.bandcamp.com/album/-) <br>
+Ensemble [ _  _  _ ] |Song Li(London), Jia Liu(Karlsruhe), Shuoxin Tan(Köln)|<br>
+3 Jun 2022, SUPERPANG, Italy <br>
+<br>
+
+## **Exhibition**
+
+Der dritte Körper | Media art exhibition <br>
+[震荡不消磁 | Sounding Sound Practice in Chinese Mainland and Hong Kong Since the 1990s](https://www.ioam.org.cn/%E9%9C%87%E8%8D%A1%E4%B8%8D%E6%B6%88%E7%A3%81/) <br>
+2025.02.22-06.01 @ Inside-Out Art Museum Beijing, China <br>
+[International Conference on Live Coding (ICLC)](https://iclc.toplap.org/2023/timetable.html),2023.04.20-23, Utrecht <br>
+[Sound & Visual Exhibition](https://www.divfuse.com/index.php/2022/06/26/der-dritte-korper-_-_-_-li-song-jia-liu-shuoxin-tan/)
+2022.05 @ DIVFUSE media art gallery, London <br>
+
+[From Other Spaces : [ _ _ _ ] | Sound Exhibition](https://www.divfuse.com/index.php/2022/01/11/from-other-spaces-_-_-_/) <br>
+2022.02.25-27 @ DIVFUSE media art gallery, London <br>
+
+## **Scholarships**
+Musikfonds, 2021 <br>
+Initiative Freie Musik e.V. Köln, 2021 <br>
+
+## **Interview**
+[Collaboration and Communication through Network Music](https://defaultdenhaag.substack.com/p/focus-default-9-x-3345-02102023-with) <br>
+by Cis De Gendt, 2023.10.02 @ default#9 x 3345, Centrale Bibliotheek Den Haag <br>
+<br>
+[Articulated Network](https://www.on-cologne.de/en/shuoxin-tan-en/)  <br>
+by Shuoxin Tan, 2022.06 @ ON Podcast, Köln <br>
+<br>
+[Ensemble [ _ _ _ ]](https://www.divfuse.com/index.php/2022/01/11/from-other-spaces-_-_-_/) <br>
+by Livia B Garcia, 2022.02.26 @ <em>DIVFUSE</em> media art gallery, London <br>
+<br>
+[Ensemble [ _ _ _ ]](https://phd.escdotdot.com/escdotdot-presents/ava-bunker-performances/_-_-_/interview-_-_-_-li-song-liu-jia-tan-shuoxin/?fbclid=IwAR0eH9UP5JUJ8Z6rT2vGKeWzA7iAooo6T7hEpxlw9c6qJtPbgJt5rkivuN0) <br>
+by Edward Sanderson, 2021.03.14 @ HKBU AVA Kai Tak Campus, Hong Kong
+<br>
+
+## Protocol
 
 #### Questions:
 - Algorithm in context of Network Music: how could Algorithm be collaborative and distributed?
