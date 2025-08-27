@@ -1,15 +1,29 @@
 <img src="https://github.com/luuiii/collaborative_algorithm/blob/master/empty_array_nil.png" height="189" width="472"> <br>
 ## collaborative_algorithm
-### Jia & Shuoxin & Song - created @ 2020.11.16
+### Jia & Shuoxin & Song - created @ 2020.11.16 <br>
 
-dates:
-- [Cafe OTO](https://www.cafeoto.co.uk/events/li-song-ensemble-ecka-mordecai-malvern-brume/) @ london - 2021.12.14 - GMT 22:15
-- [HKCR](https://route.notimportant.org) @ Hong Kong - 2021.11.30 - CET 14:00 / HKT 21:00
-- [Ambient Festival](https://ambient-festival.com/ensemble/) @ cologne st.michael - 2021.09.09 - CEST 23:00
-- [Der dritte Körper](https://third.notimportant.org) @ cologne st.michael - 2021.08.31 - CEST 22:00
-- [algopolis live Ljudmila](https://wiki.ljudmila.org/Algopolis_live) @ ljubljana - 2021.05.14 - CEST 22:10
-- escdotdot presents [协作算法音乐表演 | Collaborative Algorithmic Music Performance](https://ava.hkbu.edu.hk/en/events/___) @ HKBU AVA Kai Tak Campus, Hong Kong - 2021.03.14 - HKT 19:00
-- [TOPLAP Live Stream](https://transnodal.toplap.org/) - 19.Feb.2021 - CET 21:00
+## **Events** <br>
+xiaozu @ beijing, china - 2024.12.01 <br>
+[Self-sufficient music #3](https://nubprojectspace.com/programma/self-sufficient-musics-3-li-song-jia-liu-shuoxin-tan.shtml) @ NUB Project Space, Palazzo Fabroni Pistoia, Italy - 2024.10.12 <br>
+[CENTRE COURT FESTIVAL 2024](https://ltk4.de/portfolio/centrecourt24/), @ LTK4 cologne - 2024.08.03 <br>
+[TOPLAP20](https://archive.org/details/toplap20------) @ karlsruhe - 2024.02.23 <br>
+Gemeinde @ cologne - 2023.10.04 <br>
+[default #9 x 3345](https://defaultdenhaag.substack.com/p/focus-default-9-x-3345-02102023-with) @ the hague - 2023.10.02 <br>
+[default #8](https://defaultdenhaag.substack.com/p/focus-default-8-01102023-with-valerio) @ the hague - 2023.10.01 <br>
+iv project space @ brussels - 2023.09.30 <br>
+Kiosk Radio @ brussels - 2023.09.30 <br>
+ICLC-International Conference on Live Coding @ utrecht - 2023.04.21 <br>
+Spanners @ london - 2023.02.26 <br>
+Waverly Bar @ edinburgh - 2023.02.25 <br>
+La Chunky @ glasgow - 2023.02.24 <br>
+[Compassion Through Algorithms, Algorave Tokyo](https://www.forestlimit.com/event-details/compassion-through-algorithms) @ tokyo - 2022.12.27 <br>
+[Cafe OTO](https://www.cafeoto.co.uk/events/li-song-ensemble-ecka-mordecai-malvern-brume/) @ london - 2021.12.14 <br>
+[HKCR](https://route.notimportant.org) @ Hong Kong - 2021.11.30 <br>
+[Ambient Festival](https://ambient-festival.com/ensemble/) @ cologne st.michael - 2021.09.09 <br>
+[Der dritte Körper](https://third.notimportant.org) @ cologne st.michael - 2021.08.31 <br>
+[algopolis live Ljudmila](https://wiki.ljudmila.org/Algopolis_live) @ ljubljana - 2021.05.14 <br>
+escdotdot presents [协作算法音乐表演 | Collaborative Algorithmic Music Performance](https://ava.hkbu.edu.hk/en/events/___) @ HKBU AVA Kai Tak Campus, Hong Kong - 2021.03.14 <br>
+[TOPLAP Live Stream](https://transnodal.toplap.org/) - 2021.02.19
 
 ## **Release**
 [[ _ _ _ ]](https://e---e.bandcamp.com/album/-) <br>
