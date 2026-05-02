@@ -14,18 +14,17 @@
 // waitTime: Pseq([0.1, 0.2, 0.3], inf)
 // sampler examples:
 // start: Pseq([0, 0.2, 0.6], inf)
-// size: Pseq([0.05, 0.1, 0.2], inf)
 // speed: Pseq([1, 0.5, 2], inf)
 s.makeWindow
 s.meter
 (
 // This is the switch to control whether we are playing in a physical venue
-~offlinePerformance = false;
+~offlinePerformance = true;
 ~configs = [(
 	// sine sound
 	name: \sine,
 	waitTime: {1},
-	nextTarget: {[nil].choose},
+	nextTarget: {[2].choose},
 	attack: {0.5},
 	sustain: {0.2},
 	amp: {0.2},
@@ -66,7 +65,6 @@ s.meter
 	waitTime: {1},
 	nextTarget: {[1].choose},
 	start: Pbrown(0.5, 0.9, 0.02),
-	size: Pseq([0.01, 0.05, 0.1, 0.3, 0.5], inf)/5,
 	speed: Pseq([10, 20, 9, 7, Pwhite(4, 10.0, 3)], inf)*2,
 	attack: {0.1},
 	sustain: {0.8},
@@ -134,7 +132,7 @@ StageLimiter.activate
 var to = ~userList.reject(_==~id).choose;
 to.postln;
 // target, sender, waitTime, attack, sustain, amp, level, maxLevel
-n.sendMsg('/sine', 1, ~id, rrand(1, 2), 0.5, 0.2, 0.12, 10, rrand(20, 30));
+n.sendMsg('/sine', 2, ~id, rrand(1, 2), 0.5, 0.2, 0.12, 10, rrand(20, 30));
 )
 
 (
@@ -170,7 +168,7 @@ n.sendMsg('/sampleFull', to, ~id, 4, 0.2, 0.9, 0.3, nil, 0, 6); // target, sende
 // Start sampler chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/sampler', 1, ~id, 1, 0.02, 0.9, 0.3, 0, 0.2, 1); // target, sender, waitTime, attack, sustain, amp, start, size, speed
+n.sendMsg('/sampler', 1, ~id, 1, 0.02, 0.9, 0.3, 0, 1); // target, sender, waitTime, attack, sustain, amp, start, speed
 )
 
 

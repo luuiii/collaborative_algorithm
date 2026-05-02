@@ -17,7 +17,7 @@ n = NetAddr("127.0.0.1", 57140);
 // Song - 1
 // Shuoxin - 2
 ~state = State.new(n);
-~id = 1;
+~id = 0;
 ~initBaseFreq = 2000;
 ~state.setVal(\baseFreq, ~id.asSymbol, ~initBaseFreq);
 ~userNameList = [
@@ -392,7 +392,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 	];
 };
 
-~play_message = {|queueName, from, to, waitTime, attack, sustain, amp, bufindex, level, samplerStart, samplerSize, samplerSpeed|
+~play_message = {|queueName, from, to, waitTime, attack, sustain, amp, bufindex, level, samplerStart, samplerSpeed|
 	// When it's offline and it's not for you. We do nothing
 	var respondToEvent = ~responseToEventForLoc.(from);
 	var panFunc = ~getPanFunc.value();
@@ -412,9 +412,9 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 				var start = (samplerStart ? 0).clip(0, 1);
 				var speed = (samplerSpeed ? 1).max(0.05);
 				var sampleDuration = ~samplerBuffer.duration;
+				var playbackDuration = (waitTime ? 1).max(0.01);
 				var remainingDuration = ((1 - start) * sampleDuration).max(0.01);
-				var requestedDuration = (((samplerSize ? 0.2).clip(0, 1)) * sampleDuration).max(0.01);
-				var sliceDuration = requestedDuration.min(remainingDuration);
+				var actualDuration = playbackDuration.min(remainingDuration / speed);
 
 				Synth(\sampler, [
 					\amp, amp ? 0.3,
@@ -422,7 +422,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 					\rate, speed,
 					\pan, panFunc.value(from),
 					\startPos, start,
-					\dur, sliceDuration / speed,
+					\dur, actualDuration,
 					\attack, attack ? 0.02,
 					\sustain, sustain ? 0.9,
 				]);
@@ -656,7 +656,6 @@ OSCdef(\syncConfigs, {|msg|
 		var nextTargetFn = config['nextTarget'].asStream;
 		var featureFn = config['feature'].asStream;
 		var startFn = config['start'].asStream;
-		var sizeFn = config['size'].asStream;
 		var speedFn = config['speed'].asStream;
 
 		var attackFn = config['attack'].asStream;
@@ -679,10 +678,6 @@ OSCdef(\syncConfigs, {|msg|
 			Error("Chain %s can't return an array for start".format(config.name.asSymbol)).throw;
 		});
 
-		if(config['size'].asStream.value().isArray, {
-			Error("Chain %s can't return an array for size".format(config.name.asSymbol)).throw;
-		});
-
 		if(config['speed'].asStream.value().isArray, {
 			Error("Chain %s can't return an array for speed".format(config.name.asSymbol)).throw;
 		});
@@ -695,20 +690,18 @@ OSCdef(\syncConfigs, {|msg|
 			var sustain = msg[5];
 			var amp = msg[6];
 			var sampleBufindex, currentLevel, maxLevel;
-			var startPos, size, speed;
+			var startPos, speed;
 			var toRespond = ~isSelfChecker.(receiver);
 			var chainName = config.name.asSymbol;
 
 			if (chainName == \sampler, {
 				startPos = msg[7];
-				size = msg[8];
-				speed = msg[9];
+				speed = msg[8];
 				sampleBufindex = nil;
 				currentLevel = 0;
 				maxLevel = nil;
 			}, {
 				startPos = nil;
-				size = nil;
 				speed = nil;
 
 				if ([\sample, \sampleFull].includes(chainName), {
@@ -734,7 +727,7 @@ OSCdef(\syncConfigs, {|msg|
 
 			~play_message.(
 				chainName, from, receiver, lastWaitTime,
-				attack, sustain, amp, sampleBufindex, currentLevel, startPos, size, speed
+				attack, sustain, amp, sampleBufindex, currentLevel, startPos, speed
 			);
 
 			// "============".postln;
@@ -768,7 +761,6 @@ OSCdef(\syncConfigs, {|msg|
 									sustainFn.value(),
 									ampFn.value(),
 									startFn.value(),
-									sizeFn.value(),
 									speedFn.value()
 								);
 							});
