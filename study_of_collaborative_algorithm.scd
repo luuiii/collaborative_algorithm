@@ -17,7 +17,7 @@ n = NetAddr("127.0.0.1", 57140);
 // Song - 1
 // Shuoxin - 2
 ~state = State.new(n);
-~id = 0;
+~id = 1;
 ~initBaseFreq = 2000;
 ~state.setVal(\baseFreq, ~id.asSymbol, ~initBaseFreq);
 ~userNameList = [
@@ -61,6 +61,20 @@ Buffer.freeAll;
 ~loadedContent = ~loadFiles.(~audioFiles);
 ~buffers = ~loadedContent[0];
 ~buffersMap = ~loadedContent[1];
+
+~projectRoot = PathName.new(thisProcess.nowExecutingPath ? Document.current.path).pathOnly;
+
+~loadSamplerBuffer = {
+	var samplerFiles = (~projectRoot +/+ "samples/*.wav").pathMatch;
+
+	if(samplerFiles.size != 1, {
+		Error("Sampler expects exactly one .wav file in %/samples/, found %".format(~projectRoot, samplerFiles.size)).throw;
+	});
+
+	Buffer.read(s, samplerFiles[0]);
+};
+
+~samplerBuffer = ~loadSamplerBuffer.();
 
 ~buffersMap.keys().do{|key|
 	(key ++ " length: " ++ ~buffersMap[key].size).postln;
@@ -294,6 +308,26 @@ SynthDef(\playbuf, {|out=0, pan=0, dur=20, rate=1.0, attack=0.03, sustain=0.06, 
 	Out.ar(out, sig);
 }).add;
 
+SynthDef(\sampler, {|out=0, pan=0, rate=1.0, attack=0.03, sustain=0.06, amp=1.0, startPos=0, dur=1.0, bufnum|
+	var env, sig;
+	sig = PlayBuf.ar(
+		1, bufnum, rate: BufRateScale.kr(bufnum) * rate,
+		startPos: BufFrames.ir(bufnum) * startPos,
+		loop: 0
+	);
+	env = EnvGen.kr(
+		Env([0, 1, 1, 0], [
+			(1 - sustain) * attack,
+			sustain,
+			(1 - sustain) * (1 - attack)
+		]),
+		doneAction: 2,
+		timeScale: dur
+	);
+	sig = Pan2.ar(sig * env, pan, amp);
+	Out.ar(out, sig);
+}).add;
+
 SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 0.998, pan=0|
 	var in = GrayNoise.ar(1);
 	var sig = BPF.ar(in, freq, rq);
@@ -358,7 +392,7 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 	];
 };
 
-~play_message = {|queueName, from, to, waitTime, attack, sustain, amp, bufindex, level|
+~play_message = {|queueName, from, to, waitTime, attack, sustain, amp, bufindex, level, samplerStart, samplerSize, samplerSpeed|
 	// When it's offline and it's not for you. We do nothing
 	var respondToEvent = ~responseToEventForLoc.(from);
 	var panFunc = ~getPanFunc.value();
@@ -372,6 +406,27 @@ SynthDef(\noise, {|out=0, amp=0.1, freq=1500, rq=1, dur=5, attack=0.5, sustain= 
 		\buildUp, {
 			~checkPartial.value();
 			~addPartial.value(genSound: respondToEvent);
+		},
+		\sampler, {
+			if(respondToEvent, {
+				var start = (samplerStart ? 0).clip(0, 1);
+				var speed = (samplerSpeed ? 1).max(0.05);
+				var sampleDuration = ~samplerBuffer.duration;
+				var remainingDuration = ((1 - start) * sampleDuration).max(0.01);
+				var requestedDuration = (((samplerSize ? 0.2).clip(0, 1)) * sampleDuration).max(0.01);
+				var sliceDuration = requestedDuration.min(remainingDuration);
+
+				Synth(\sampler, [
+					\amp, amp ? 0.3,
+					\bufnum, ~samplerBuffer,
+					\rate, speed,
+					\pan, panFunc.value(from),
+					\startPos, start,
+					\dur, sliceDuration / speed,
+					\attack, attack ? 0.02,
+					\sustain, sustain ? 0.9,
+				]);
+			})
 		},
 		\sample, {
 			// Skip sample chains for now as requested
@@ -600,6 +655,9 @@ OSCdef(\syncConfigs, {|msg|
 		var waitTimeFn = config['waitTime'].asStream;
 		var nextTargetFn = config['nextTarget'].asStream;
 		var featureFn = config['feature'].asStream;
+		var startFn = config['start'].asStream;
+		var sizeFn = config['size'].asStream;
+		var speedFn = config['speed'].asStream;
 
 		var attackFn = config['attack'].asStream;
 		var sustainFn = config['sustain'].asStream;
@@ -617,7 +675,19 @@ OSCdef(\syncConfigs, {|msg|
 			Error("Chain %s can't return an array for feature".format(config.name.asSymbol)).throw;
 		});
 
-				OSCdef(config.name.asSymbol, {|msg|
+		if(config['start'].asStream.value().isArray, {
+			Error("Chain %s can't return an array for start".format(config.name.asSymbol)).throw;
+		});
+
+		if(config['size'].asStream.value().isArray, {
+			Error("Chain %s can't return an array for size".format(config.name.asSymbol)).throw;
+		});
+
+		if(config['speed'].asStream.value().isArray, {
+			Error("Chain %s can't return an array for speed".format(config.name.asSymbol)).throw;
+		});
+
+		OSCdef(config.name.asSymbol, {|msg|
 			var from = msg[2];
 			var receiver = msg[1];
 			var lastWaitTime = msg[3];
@@ -625,20 +695,33 @@ OSCdef(\syncConfigs, {|msg|
 			var sustain = msg[5];
 			var amp = msg[6];
 			var sampleBufindex, currentLevel, maxLevel;
+			var startPos, size, speed;
 			var toRespond = ~isSelfChecker.(receiver);
 			var chainName = config.name.asSymbol;
 
-			// Handle different parameter layouts for sample vs non-sample chains
-			if ([\sample, \sampleFull].includes(chainName), {
-				// Sample chains: target, sender, waitTime, attack, sustain, amp, bufIndex, level, maxLevel
-				sampleBufindex = msg[7];
-				currentLevel = msg[8] ? 0;
-				maxLevel = msg[9] ? 10;
-			}, {
-				// Non-sample chains: target, sender, waitTime, attack, sustain, amp, level, maxLevel
+			if (chainName == \sampler, {
+				startPos = msg[7];
+				size = msg[8];
+				speed = msg[9];
 				sampleBufindex = nil;
-				currentLevel = msg[7] ? 0;
-				maxLevel = msg[8] ? 10;
+				currentLevel = 0;
+				maxLevel = nil;
+			}, {
+				startPos = nil;
+				size = nil;
+				speed = nil;
+
+				if ([\sample, \sampleFull].includes(chainName), {
+					// Sample chains: target, sender, waitTime, attack, sustain, amp, bufIndex, level, maxLevel
+					sampleBufindex = msg[7];
+					currentLevel = msg[8] ? 0;
+					maxLevel = msg[9] ? 10;
+				}, {
+					// Non-sample chains: target, sender, waitTime, attack, sustain, amp, level, maxLevel
+					sampleBufindex = nil;
+					currentLevel = msg[7] ? 0;
+					maxLevel = msg[8] ? 10;
+				});
 			});
 
 			// "whether to response?".postln;
@@ -651,7 +734,7 @@ OSCdef(\syncConfigs, {|msg|
 
 			~play_message.(
 				chainName, from, receiver, lastWaitTime,
-				attack, sustain, amp, sampleBufindex, currentLevel
+				attack, sustain, amp, sampleBufindex, currentLevel, startPos, size, speed
 			);
 
 			// "============".postln;
@@ -675,37 +758,50 @@ OSCdef(\syncConfigs, {|msg|
 						// ("***********").postln;
 						waitTime.wait;
 
-						// Check if we've reached max level
-						if (nextLevel >= maxLevel, {
-							(config.name ++ " reached max level " ++ maxLevel ++ ", stopping chain").postln;
-						}, {
+						if (chainName == \sampler, {
 							if (nextTarget.isNil, {
 								(config.name +" sending nil, stopped").postln;
 							}, {
-								// (receiver +" sending next message to " ++ nextTarget.asString).postln;
-
-								// For sample chain, it has an extra buffer argument
-								if ([\sample, \sampleFull].includes(chainName), {
-									n.sendMsg(
-										config.name, nextTarget, ~id, waitTime,
-										attackFn.value(),
-										sustainFn.value(),
-										ampFn.value(),
-										~getBufferByFeature.value(selectedFeature),
-										nextLevel, // Pass incremented level
-										maxLevel // Pass maxLevel through the chain
-									);
-
+								n.sendMsg(
+									config.name, nextTarget, ~id, waitTime,
+									attackFn.value(),
+									sustainFn.value(),
+									ampFn.value(),
+									startFn.value(),
+									sizeFn.value(),
+									speedFn.value()
+								);
+							});
+						}, {
+							if (nextLevel >= maxLevel, {
+								(config.name ++ " reached max level " ++ maxLevel ++ ", stopping chain").postln;
+							}, {
+								if (nextTarget.isNil, {
+									(config.name +" sending nil, stopped").postln;
 								}, {
-									n.sendMsg(
-										config.name, nextTarget, ~id, waitTime,
-										attackFn.value(),
-										sustainFn.value(),
-										ampFn.value(),
-										nextLevel, // Pass incremented level
-										maxLevel // Pass maxLevel through the chain
-									);
-								})
+									// (receiver +" sending next message to " ++ nextTarget.asString).postln;
+
+									if ([\sample, \sampleFull].includes(chainName), {
+										n.sendMsg(
+											config.name, nextTarget, ~id, waitTime,
+											attackFn.value(),
+											sustainFn.value(),
+											ampFn.value(),
+											~getBufferByFeature.value(selectedFeature),
+											nextLevel,
+											maxLevel
+										);
+									}, {
+										n.sendMsg(
+											config.name, nextTarget, ~id, waitTime,
+											attackFn.value(),
+											sustainFn.value(),
+											ampFn.value(),
+											nextLevel,
+											maxLevel
+										);
+									})
+								});
 							});
 						});
 				}.fork;},{
