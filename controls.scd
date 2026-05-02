@@ -12,14 +12,17 @@
 // *** You can use pattern class in SC as well, you don't need {}
 //     remember to always put "inf" in the repeats
 // waitTime: Pseq([0.1, 0.2, 0.3], inf)
+// sampler examples:
+// start: Pseq([0, 0.2, 0.6], inf)
+// speed: Pseq([1, 0.5, 2], inf)
 (
 // This is the switch to control whether we are playing in a physical venue
-~offlinePerformance = false;
+~offlinePerformance = true;
 ~configs = [(
 	// sine sound
 	name: \sine,
 	waitTime: {rrand(2, 5)},
-	nextTarget: {[1].choose},
+	nextTarget: {[0].choose},
 	attack: {0.5},
 	sustain: {0.2}
 ), (
@@ -48,7 +51,16 @@
 	nextTarget: {[1].choose},
 	attack: {0.2},
 	sustain: {0.9}
-)
+	), (
+	name: \sampler,
+	waitTime: {4},
+	nextTarget: {[0].choose},
+	start: {0.5},
+	speed: {1},
+	attack: {0.02},
+	sustain: {0.9},
+	amp: {0.3}
+	)
 ];
 
 // We need to sync chain configs for visual display
@@ -126,6 +138,13 @@ n.sendMsg('/sample', to, ~id, 0.1);
 var to = ~userList.reject(_==~id).choose;
 to.postln;
 n.sendMsg('/sampleFull', to, ~id, 0.1);
+)
+
+(
+// Start sampler chain
+var to = ~userList.reject(_==~id).choose;
+to.postln;
+n.sendMsg('/sampler', 0, ~id, 1, 0.02, 0.9, 0.3, 0, 1); // target, sender, waitTime, attack, sustain, amp, start, speed
 )
 
 
