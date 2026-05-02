@@ -23,8 +23,8 @@ s.meter
 ~configs = [(
 	// sine sound
 	name: \sine,
-	waitTime: {1},
-	nextTarget: {[2].choose},
+	waitTime: {0.1},
+	nextTarget: {[0].choose},
 	attack: {0.5},
 	sustain: {0.2},
 	amp: {0.2},
@@ -63,9 +63,9 @@ s.meter
 	), (
 	name: \sampler,
 	waitTime: {1},
-	nextTarget: {[1].choose},
-	start: Pbrown(0.5, 0.9, 0.02),
-	speed: Pseq([10, 20, 9, 7, Pwhite(4, 10.0, 3)], inf)*2,
+	nextTarget: {[0].choose},
+	start: Pbrown(0.1, 0.9, 0.02),
+	speed: Pseq([1, 1, 0.9, 1.1], inf),
 	attack: {0.1},
 	sustain: {0.8},
 	amp: {0.3}
@@ -132,7 +132,7 @@ StageLimiter.activate
 var to = ~userList.reject(_==~id).choose;
 to.postln;
 // target, sender, waitTime, attack, sustain, amp
-n.sendMsg('/sine', 2, ~id, rrand(1, 2), 0.5, 0.2, 0.12);
+n.sendMsg('/sine', 0, ~id, rrand(1, 2), 0.5, 0.2, 0.12);
 )
 
 (
@@ -168,7 +168,7 @@ n.sendMsg('/sampleFull', to, ~id, 4, 0.2, 0.9, 0.3, nil); // target, sender, wai
 // Start sampler chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/sampler', 1, ~id, 1, 0.02, 0.9, 0.3, 0, 1); // target, sender, waitTime, attack, sustain, amp, start, speed
+n.sendMsg('/sampler', 0, ~id, 1, 0.02, 0.9, 0.3, 0, 1); // target, sender, waitTime, attack, sustain, amp, start, speed
 )
 
 
