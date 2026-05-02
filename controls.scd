@@ -131,22 +131,22 @@ StageLimiter.activate
 // Start the sine chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-// target, sender, waitTime, attack, sustain, amp, level, maxLevel
-n.sendMsg('/sine', 2, ~id, rrand(1, 2), 0.5, 0.2, 0.12, 10, rrand(20, 30));
+// target, sender, waitTime, attack, sustain, amp
+n.sendMsg('/sine', 2, ~id, rrand(1, 2), 0.5, 0.2, 0.12);
 )
 
 (
 // start the noise chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/noise', 1, ~id, 0.1, 0.00001, 0.5, 0.25, 0, rrand(50, 100)); // target, sender, waitTime, attack, sustain, amp, level, maxLevel
+n.sendMsg('/noise', 1, ~id, 0.1, 0.00001, 0.5, 0.25); // target, sender, waitTime, attack, sustain, amp
 )
 
 (
 // Start buildUp chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/buildUp', 1, ~id, 0.1, 0.1, 0.2, 0.1, 0, 100); // target, sender, waitTime, attack, sustain, amp, level, maxLevel
+n.sendMsg('/buildUp', 1, ~id, 0.1, 0.1, 0.2, 0.1); // target, sender, waitTime, attack, sustain, amp
 )
 
 
@@ -154,14 +154,14 @@ n.sendMsg('/buildUp', 1, ~id, 0.1, 0.1, 0.2, 0.1, 0, 100); // target, sender, wa
 // Start sample chain
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/sample', to, ~id, 4, 0.2, 0.9, 0.3, nil, 0, 6); // target, sender, waitTime, attack, sustain, amp, bufIndex, level, maxLevel
+n.sendMsg('/sample', to, ~id, 4, 0.2, 0.9, 0.3, nil); // target, sender, waitTime, attack, sustain, amp, bufIndex
 )
 
 (
 // Start sample full chain (always play the full duration)
 var to = ~userList.reject(_==~id).choose;
 to.postln;
-n.sendMsg('/sampleFull', to, ~id, 4, 0.2, 0.9, 0.3, nil, 0, 6); // target, sender, waitTime, attack, sustain, amp, bufIndex, level, maxLevel
+n.sendMsg('/sampleFull', to, ~id, 4, 0.2, 0.9, 0.3, nil); // target, sender, waitTime, attack, sustain, amp, bufIndex
 )
 
 (
